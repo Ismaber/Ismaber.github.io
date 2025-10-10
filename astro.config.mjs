@@ -7,6 +7,7 @@ import react from '@astrojs/react';
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://Ismaber.github.io',
   i18n: {
     locales: ["es", "en"],
     defaultLocale: "es",
