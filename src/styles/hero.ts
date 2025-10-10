@@ -6,10 +6,7 @@ export default heroui({
   defaultTheme: "indigo",
   themes: {
     // Indigo palette – this remains the default brand theme.  A dark variant
-    // is defined below.  Foreground colours for text are specified via
-    // `foreground` in `background` and a global `foreground` token is not
-    // necessary as the HeroUI plugin will derive it.  See the dark variant
-    // for a similar structure.
+    // is defined below.
     indigo: {
       colors: {
         // INDIGO (Primary)
