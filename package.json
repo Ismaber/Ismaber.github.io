@@ -1,0 +1,33 @@
+{
+  "name": "prueba-astro",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "pdf": "tsx src/scripts/generate-pdf.ts --preset=ebook"
+  },
+  "dependencies": {
+    "@astrojs/react": "^4.4.0",
+    "@heroui/react": "^2.8.5",
+    "@heroui/use-theme": "^2.1.10",
+    "@nanostores/react": "^1.0.0",
+    "@tailwindcss/vite": "^4.1.14",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "astro": "^5.14.1",
+    "country-flag-icons": "^1.5.21",
+    "framer-motion": "^12.23.22",
+    "nanostores": "^1.0.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-icons": "^5.5.0",
+    "tailwindcss": "^4.1.14"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.0",
+    "tsx": "^4.20.6"
+  }
+}

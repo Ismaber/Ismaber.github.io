@@ -1,0 +1,52 @@
+---
+import '../styles/global.css'
+import Background from "../components/Background.astro";
+import { t } from '../i18n/store.ts';
+
+// Determine the current locale based on Astro's runtime.  Fallback to
+// Spanish if no locale is present (this can happen during dev
+// preview).  The locale is used for the <html> lang attribute and to
+// select the appropriate translation strings.
+const locale = (Astro.currentLocale ?? 'es') as 'es' | 'en';
+
+// Compute a translated page title.  All pages share the same title,
+// defined in your translation dictionaries (dicts.ts).
+const pageTitle = t(locale, 'title');
+---
+
+<!doctype html>
+<html lang={locale} class="scroll-smooth">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<meta name="color-scheme" content="dark light" />
+		<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+		<meta name="theme-color" media="(prefers-color-scheme: dark)"  content="#0b1020" />
+		<title>{pageTitle}</title>
+		<script is:inline>
+			(() => {
+				try {
+					const stored = localStorage.getItem('theme');
+					const prefersDark = matchMedia('(prefers-color-scheme: dark)').matches;
+					let theme = stored || (prefersDark ? 'indigo-dark' : 'indigo');
+
+					const root = document.documentElement;
+					root.classList.add(theme);
+					root.setAttribute('data-theme', theme);
+					if (theme.endsWith('-dark')) {
+						root.classList.add('dark');
+						root.style.colorScheme = 'dark';      // aquí para el primer render
+					} else {
+						root.style.colorScheme = 'light';
+					}
+				} catch {}
+			})();
+		</script>
+	</head>
+	<body>
+		<Background/>
+		<slot />
+	</body>
+</html>

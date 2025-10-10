@@ -1,0 +1,64 @@
+---
+// src/components/Header.astro
+import HeaderButtons from "./HeaderButtons.tsx";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import { t } from "../i18n/store.ts";
+
+const locale = (Astro.currentLocale ?? "es") as "es" | "en";
+const toES = getRelativeLocaleUrl("es");
+const toEN = getRelativeLocaleUrl("en");
+
+const labels = {
+  currentLang: locale.toUpperCase() as "ES" | "EN",
+  download: t(locale, "ui.download"),
+  view: t(locale, "ui.view_portfolio"), // o "ui.view_web" si prefieres
+  theme: t(locale, "ui.theme"),
+  modal_title: t(locale, "ui.modal_title"),
+  modal_download: t(locale, "ui.modal_download"),
+  modal_close: t(locale, "ui.modal_close"),
+  modal_unsupported: t(locale, "ui.modal_unsupported"),
+  modal_open_new_tab: t(locale, "ui.modal_open_new_tab"),
+};
+---
+
+<header
+  id="mainHeader"
+  class="sticky top-0 z-50
+         text-white border-b border-white/30 dark:border-white/10
+         shadow-lg backdrop-blur-md backdrop-saturate-150
+         bg-gradient-to-r from-slate-500/80 via-primary-600/70 to-slate-500/80
+         dark:from-slate-900/80 dark:via-primary-900/70 dark:to-slate-900/80
+         transition-colors"
+>
+  <div
+    class="relative z-40 max-w-6xl mx-auto px-4 py-3
+           flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-0"
+  >
+    <h1
+      class="min-w-0 sm:max-w-none
+             text-2xl font-bold tracking-tight leading-tight
+             truncate text-center sm:text-left"
+    >
+      Ismael Berdusán Muñoz
+    </h1>
+
+    <!-- Igual que el diseño original, pero pasando labels i18n -->
+    <HeaderButtons client:load toES={toES} toEN={toEN} labels={labels} />
+  </div>
+</header>
+
+<script is:inline>
+  (() => {
+    const header = document.getElementById('mainHeader');
+    if (!header) return;
+    const update = () => {
+      const h = Math.ceil(header.getBoundingClientRect().height);
+      document.documentElement.style.setProperty('--header-h', `${h}px`);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(header);
+    window.addEventListener('load', update);
+    window.addEventListener('orientationchange', update);
+  })();
+</script>

@@ -1,0 +1,238 @@
+---
+// src/components/Background.astro
+---
+<div
+  aria-hidden="true"
+  class="pointer-events-none fixed inset-0 -z-10 w-[100vw]
+         h-screen min-h-[100svh] min-h-[100dvh] overflow-hidden"
+>
+  <!-- Base (light/dark) -->
+  <div class="absolute inset-0 z-0">
+    <!-- La transición de opacidad de la capa base se ha eliminado para evitar que
+         ambas capas sean parcialmente transparentes a la vez, lo que dejaba ver
+         el fondo blanco del body. La capa oscura pasa de 0 a 100 sin animación. -->
+    <div class="absolute inset-0 bg-gradient-to-b from-slate-100 to-slate-200 dark:opacity-0"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-slate-950 to-slate-900 opacity-0 dark:opacity-100"></div>
+  </div>
+
+  <!-- Mesh / Radiales -->
+  <div
+    class="absolute inset-0 z-0
+           bg-[radial-gradient(1100px_700px_at_12%_8%,hsl(var(--heroui-primary-400))_/_28%,transparent_62%),radial-gradient(1000px_650px_at_88%_12%,hsl(var(--heroui-secondary-400))_/_24%,transparent_58%),radial-gradient(900px_600px_at_50%_92%,theme(colors.teal.400)_/_22%,transparent_55%)]
+           dark:bg-[radial-gradient(1100px_700px_at_12%_8%,hsl(var(--heroui-primary-400))_/_16%,transparent_62%),radial-gradient(1000px_650px_at_88%_12%,hsl(var(--heroui-secondary-400))_/_12%,transparent_58%),radial-gradient(900px_600px_at_50%_92%,theme(colors.teal.300)_/_10%,transparent_55%)]"
+  ></div>
+
+  <!-- Auroras decorativas (sin parallax ni animaciones) -->
+  <div class="absolute inset-0 z-0 mix-blend-screen">
+    <!-- Aurora 1 -->
+    <div class="absolute inset-0">
+      <div
+        class="absolute -top-24 -left-20 w-[42rem] h-[42rem] opacity-60
+               [background:conic-gradient(from_220deg_at_50%_50%,_hsl(var(--heroui-primary-400))_0deg,_transparent_110deg,_hsl(var(--heroui-secondary-400))_180deg,_transparent_300deg)]
+               [mask-image:radial-gradient(closest-side,_#000,_transparent)]
+               blur-3xl"
+      ></div>
+    </div>
+
+    <!-- Aurora 2 -->
+    <div class="absolute inset-0">
+      <div
+        class="absolute top-[20%] right-[-10%] w-[36rem] h-[36rem] opacity-55
+               [background:conic-gradient(from_140deg_at_50%_50%,_theme(colors.fuchsia.400)_0deg,_transparent_120deg,_theme(colors.indigo.400)_200deg,_transparent_330deg)]
+               [mask-image:radial-gradient(closest-side,_#000,_transparent)]
+               blur-3xl"
+      ></div>
+    </div>
+
+    <!-- Aurora 3 -->
+    <div class="absolute inset-0">
+      <div
+        class="absolute bottom-[-10%] left-1/2 -translate-x-1/2 w-[48rem] h-[48rem] opacity-45
+               [background:conic-gradient(from_20deg_at_50%_50%,_theme(colors.teal.400)_0deg,_transparent_160deg,_hsl(var(--heroui-primary-300))_240deg,_transparent_330deg)]
+               [mask-image:radial-gradient(closest-side,_#000,_transparent)]
+               blur-3xl"
+      ></div>
+    </div>
+  </div>
+
+  <!-- Blobs flotantes -->
+  <div
+    class="absolute -top-32 -left-32 z-0 w-[24rem] h-[24rem] sm:w-[36rem] sm:h-[36rem]
+           rounded-full blur-2xl sm:blur-3xl
+           bg-indigo-400/30 dark:bg-indigo-300/20"
+  ></div>
+
+  <div
+    class="absolute -bottom-40 -right-24 z-0 w-[22rem] h-[22rem] sm:w-[30rem] sm:h-[30rem]
+           rounded-full blur-2xl sm:blur-3xl
+           bg-fuchsia-400/25 dark:bg-fuchsia-500/16"
+  ></div>
+
+  <div
+    class="absolute top-[42%] left-1/2 -translate-x-1/2 z-0 w-[20rem] h-[20rem] sm:w-[26rem] sm:h-[26rem]
+           rounded-full blur-2xl sm:blur-3xl
+           bg-teal-400/24 dark:bg-teal-400/14"
+  ></div>
+
+  <!-- Beams (rayos) girando MUY lento -->
+  <div
+    class="absolute inset-[-15%] z-0 mix-blend-soft-light opacity-[0.08] dark:opacity-[0.12]
+           [mask-image:radial-gradient(900px_700px_at_50%_40%,_#000_60%,_transparent_100%)]"
+    style="
+      background:
+        conic-gradient(from_0deg_at_50%_50%,
+          rgba(255,255,255,.14) 0deg, transparent 18deg,
+          transparent 42deg, rgba(255,255,255,.10) 60deg,
+          transparent 80deg, transparent 110deg,
+          rgba(255,255,255,.12) 130deg, transparent 150deg,
+          transparent 190deg, rgba(255,255,255,.10) 210deg,
+          transparent 230deg, transparent 270deg,
+          rgba(255,255,255,.12) 290deg, transparent 360deg);
+    "
+  ></div>
+
+  <!-- Scan highlight diagonal -->
+  <div
+    class="absolute inset-0 z-10 pointer-events-none mix-blend-screen opacity-[0.06] dark:opacity-[0.08]
+           [mask-image:linear-gradient(to_bottom,transparent,black_30%,black_70%,transparent)]"
+    style="
+      background:
+        linear-gradient(120deg, rgba(255,255,255,.25) 0%, rgba(255,255,255,0) 40%);
+      background-repeat: no-repeat;
+      background-size: 150% 150%;
+    "
+  ></div>
+
+  <!-- Viñeta / enfocado al centro -->
+  <div
+    class="absolute inset-0 z-0
+           [mask-image:radial-gradient(1200px_800px_at_50%_30%,_#000_45%,_transparent_100%)]
+           bg-[radial-gradient(1200px_800px_at_50%_30%,transparent,rgba(0,0,0,0.06))]
+           dark:bg-[radial-gradient(1200px_800px_at_50%_30%,transparent,rgba(0,0,0,0.22))]"
+  ></div>
+
+  <!-- Grid sutil (ahora con movimiento) -->
+  <div
+    class="absolute inset-0 z-10 opacity-40 dark:opacity-35
+           [background-image:radial-gradient(rgba(2,6,23,.26)_1px,transparent_1px)]
+           dark:[background-image:radial-gradient(rgba(255,255,255,.42)_1px,transparent_1px)]
+           [background-size:22px_22px]
+           [mask-image:radial-gradient(900px_700px_at_50%_35%,_#000_55%,_transparent_100%)]"
+  ></div>
+</div>
+
+<style is:global>
+/* ===== Animaciones (globales) ===== */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes float {
+    0%   { transform: translate3d(0,0,0) }
+    50%  { transform: translate3d(10px,-16px,0) }
+    100% { transform: translate3d(0,0,0) }
+  }
+  @keyframes float-slow {
+    0%   { transform: translate3d(0,0,0) rotate(0deg) }
+    50%  { transform: translate3d(-12px,12px,0) rotate(2deg) }
+    100% { transform: translate3d(0,0,0) rotate(0deg) }
+  }
+  @keyframes float-rev {
+    0%   { transform: translate3d(-6px,0,0) }
+    50%  { transform: translate3d(12px,10px,0) }
+    100% { transform: translate3d(-6px,0,0) }
+  }
+  @keyframes aurora {
+    0%   { transform: translate3d(0,0,0) rotate(0deg) }
+    50%  { transform: translate3d(12px,-10px,0) rotate(6deg) }
+    100% { transform: translate3d(0,0,0) rotate(0deg) }
+  }
+  @keyframes aurora-slow {
+    0%   { transform: translate3d(0,0,0) rotate(0deg) }
+    50%  { transform: translate3d(-10px,8px,0) rotate(-5deg) }
+    100% { transform: translate3d(0,0,0) rotate(0deg) }
+  }
+  @keyframes aurora-rev {
+    0%   { transform: translate3d(0,0,0) rotate(0deg) }
+    50%  { transform: translate3d(8px,14px,0) rotate(8deg) }
+    100% { transform: translate3d(0,0,0) rotate(0deg) }
+  }
+
+  /* Beams giro ultra-lento */
+  @keyframes spin-slower {
+    from { transform: rotate(0deg) }
+    to   { transform: rotate(360deg) }
+  }
+  .animate-spin-slower { animation: spin-slower 90s linear infinite; }
+
+  /* Scan highlight (desplaza el gradiente) */
+  @keyframes shine-move {
+    0%   { background-position: -120% -120%; }
+    50%  { background-position:  20%  20%; }
+    100% { background-position: 120% 120%; }
+  }
+  .animate-shine { animation: shine-move 22s ease-in-out infinite; }
+
+  /* Grid paneando muy despacio */
+  @keyframes grid-pan {
+    0%   { background-position: 0px 0px; }
+    100% { background-position: 200px 200px; }
+  }
+  .animate-grid-pan { animation: grid-pan 60s linear infinite; }
+
+  /* ===== Parallax scroll-driven (sin JS) ===== */
+  @keyframes parallax-up {
+    from { transform: translateY(var(--parallax-y, 8vh)); }
+    to   { transform: translateY(calc(var(--parallax-y, 8vh) * -1)); }
+  }
+  @keyframes parallax-down {
+    from { transform: translateY(calc(var(--parallax-y, 10vh) * -1)); }
+    to   { transform: translateY(var(--parallax-y, 10vh)); }
+  }
+
+  /* Fallback visible siempre */
+  .parallax-up-1, .parallax-up-2, .parallax-down-1 { transform: none; }
+
+  @supports (animation-timeline: scroll()) {
+    .parallax-up-1 {
+      --parallax-y: 8vh;
+      animation-name: parallax-up;
+      animation-duration: 1s;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root block);
+      animation-range: 0% 100%;
+      will-change: transform;
+    }
+    .parallax-up-2 {
+      --parallax-y: 12vh;
+      animation-name: parallax-up;
+      animation-duration: 1s;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root block);
+      animation-range: 0% 100%;
+      will-change: transform;
+    }
+    .parallax-down-1 {
+      --parallax-y: 10vh;
+      animation-name: parallax-down;
+      animation-duration: 1s;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root block);
+      animation-range: 0% 100%;
+      will-change: transform;
+    }
+  }
+}
+
+/* Reduce motion: congelamos animaciones y dejamos el diseño */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-float-slow,
+  .animate-float-rev,
+  .animate-aurora,
+  .animate-aurora-slow,
+  .animate-aurora-rev,
+  .animate-spin-slower,
+  .animate-shine,
+  .animate-grid-pan { animation: none !important; }
+
+  .parallax-up-1, .parallax-up-2, .parallax-down-1 { transform: none !important; }
+}
+</style>

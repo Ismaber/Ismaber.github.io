@@ -1,0 +1,199 @@
+---
+import Section from './Section.tsx';
+import { t } from '../i18n/store.ts';
+import { Chip } from "@heroui/react";
+import { FaCircleUser, FaBriefcase, FaGraduationCap, FaWrench } from 'react-icons/fa6';
+import { ResponsiveAside } from './Aside';
+
+const locale = (Astro.currentLocale ?? 'es') as 'es' | 'en';
+
+const languages = [
+  { code: 'es', label: t(locale, 'languages.es') },
+  { code: 'en', label: t(locale, 'languages.en') },
+];
+
+const skills = [
+  t(locale, 'skills.teamwork'),
+  t(locale, 'skills.troubleshooting'),
+  t(locale, 'skills.detail'),
+  t(locale, 'skills.self'),
+  t(locale, 'skills.learning'),
+  t(locale, 'skills.initiative'),
+];
+
+const socialLinks = [
+  { kind: 'linkedin', href: 'https://www.linkedin.com/in/ismael-berdusán-muñoz-a72a41338/', label: 'LinkedIn' },
+  { kind: 'github', href: 'https://github.com/Ismaber', label: 'GitHub' },
+];
+
+const cityLabel = t(locale, 'location.city') as string;
+const coordsRaw = t(locale, 'location.coords') as string;
+const [lat, lon] = (coordsRaw ?? '').split(',').map(s => s?.trim()).filter(Boolean);
+const cityHref = (lat && lon)
+  ? `https://www.google.com/maps/place/${encodeURIComponent(cityLabel)}/@${lat},${lon},12z`
+  : undefined;
+
+type ExperienceItem = {
+  role: string;
+  place?: string;
+  date?: string;
+  desc?: string;
+};
+
+const itemsFromDict = t(locale, 'experience.items') as unknown;
+const experiences: ExperienceItem[] =
+  (Array.isArray(itemsFromDict) && itemsFromDict.length > 0)
+    ? (itemsFromDict as ExperienceItem[])
+    : [{
+        role: t(locale, 'experience.role') as string,
+        place: t(locale, 'experience.place') as string,
+        date: t(locale, 'experience.date') as string,
+        desc: t(locale, 'experience.desc') as string,
+      }];
+---
+
+<section>
+  <div
+    class="max-w-6xl mx-auto px-4 py-10 md:py-14
+           grid grid-cols-1 lg:[grid-template-columns:320px_1fr]
+           gap-6 lg:gap-8 items-start"
+  >
+    <!-- Aside (puedes envolverlo con wrapper sticky si quieres) -->
+    <ResponsiveAside
+      client:visible
+      imgSrc="/foto.png"
+      altText={t(locale, 'profile.alt')}
+      headline={t(locale, 'headline')}
+      email="ismael2822001@gmail.com"
+      city={cityLabel}
+      cityHref={cityHref}
+      socialLinks={socialLinks}
+      languages={languages}
+      skills={skills}
+      contactTitle={t(locale, 'sections.contact')}
+      languageTitle={t(locale, 'sections.languages')}
+      skillsTitle={t(locale, 'sections.skills')}
+    />
+
+
+    <!-- Main content -->
+    <div class="min-w-0 space-y-8">
+      <!-- About -->
+      <Section
+        id="about"
+        title={t(locale, 'sections.about')}
+        icon={FaCircleUser}
+        delay="0ms"
+      >
+        <div class="rt leading-7 sm:leading-8" set:html={t(locale, 'about.text')}></div>
+      </Section>
+
+      <!-- Experience -->
+      <Section
+        id="experience"
+        title={t(locale, 'sections.experience')}
+        icon={FaBriefcase}
+        delay="80ms"
+      >
+        <div class="pt-1">
+          <ol class="relative ml-3 md:ml-4 pl-6 md:pl-7
+                     before:absolute before:top-2 before:bottom-2 before:left-0
+                     before:w-px before:bg-primary-300 dark:before:bg-primary-900">
+            {experiences.map((item, idx) => (
+              <li class="relative mb-5 last:mb-0">
+                <span
+                  class="absolute -left-[13px] md:-left-[15px] top-2 size-4 rounded-full
+                         bg-primary-600 border-4 border-primary-400 ring-3 ring-primary-200 dark:bg-primary-200 dark:border-primary-400 dark:ring-primary-600"
+                ></span>
+
+                <div
+                  class="border border-slate-200 bg-white rounded-xl p-3.5 transition
+                         hover:shadow-xl hover:border-primary-800/40
+                         dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary-200/50"
+                >
+                  <div class="grid gap-1 sm:grid-cols-[1fr,auto] sm:items-baseline">
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">
+                      {item.role}
+                    </h3>
+                    <span class="text-xs text-slate-600 italic whitespace-normal sm:whitespace-nowrap dark:text-slate-300 min-w-0">
+                      {item.place && (<span>{item.place}</span>)}{item.place && ' · '}
+                      {item.date && (<span>{item.date}</span>)}
+                    </span>
+                  </div>
+
+                  {item.desc && (
+                    <div class="rt mt-2 leading-7 sm:leading-8" set:html={item.desc}></div>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </Section>
+
+      <!-- Education -->
+      <Section
+        id="education"
+        title={t(locale, 'sections.education')}
+        icon={FaGraduationCap}
+        delay="160ms"
+      >
+        <div class="grid gap-4 pt-1">
+          <div class="border border-slate-200 bg-white rounded-xl p-3.5 dark:border-slate-800 dark:bg-slate-900">
+            <div class="grid gap-1 sm:grid-cols-[1fr,auto] sm:items-baseline mb-2">
+              <h3 class="text-lg font-bold">
+                {t(locale, 'education.degree')}
+              </h3>
+              <span class="text-xs text-slate-600 italic whitespace-nowrap dark:text-slate-300">
+                <span>{t(locale, 'education.place')}</span> ·
+                <span>{t(locale, 'education.date')}</span>
+              </span>
+            </div>
+            <div class="grid gap-2.5">
+              <div class="pt-2.5 border-t border-dashed border-slate-300/60 first:pt-0 first:border-0 dark:border-slate-600/35">
+                <div class="font-bold text-[0.95rem] mb-0.5">
+                  {t(locale, 'education.tracks.sys.title')}
+                </div>
+                <div class="rt leading-7 sm:leading-8" set:html={t(locale, 'education.tracks.sys.desc')}></div>
+              </div>
+              <div class="pt-2.5 border-t border-dashed border-slate-300/60 first:pt-0 first:border-0 dark:border-slate-600/35">
+                <div class="font-bold text-[0.95rem] mb-0.5">
+                  {t(locale, 'education.tracks.db.title')}
+                </div>
+                <div class="rt leading-7 sm:leading-8" set:html={t(locale, 'education.tracks.db.desc')}></div>
+              </div>
+              <div class="pt-2.5 border-t border-dashed border-slate-300/60 first:pt-0 first:border-0 dark:border-slate-600/35">
+                <div class="font-bold text-[0.95rem] mb-0.5">
+                  {t(locale, 'education.tracks.web.title')}
+                </div>
+                <div class="rt leading-7 sm:leading-8" set:html={t(locale, 'education.tracks.web.desc')}></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      <!-- Tools -->
+      <Section
+        id="tools"
+        title={t(locale, 'sections.tools')}
+        icon={FaWrench}
+        delay="240ms"
+      >
+        <div class="pt-1">
+          <div class="flex flex-wrap gap-2">
+            {[
+              'Python','JavaScript','C','C++','Java','Kotlin','Linux','Shell','SQL',
+              'Docker','Docker Compose','React','Next.js','CI/CD','Openstack',
+              'KVM / QEMU','Git','ROS 2','Tailwind','Github Actions'
+            ].map((tool) => (
+              <Chip key={tool} variant="solid" color="primary" size="lg" radius="sm">
+                {tool}
+              </Chip>
+            ))}
+          </div>
+        </div>
+      </Section>
+    </div>
+  </div>
+</section>
