@@ -3,7 +3,7 @@ import React from "react";
 import { Button, Drawer, DrawerBody, DrawerContent, Avatar, Chip, DrawerHeader } from "@heroui/react";
 import { useDisclosure } from "@heroui/react";
 import {
-  FaPhone, FaEnvelope, FaLocationDot, FaLinkedin, FaGithub,
+  FaEnvelope, FaLocationDot, FaLinkedin, FaGithub,
   FaLanguage, FaToolbox, FaGlobe, FaLink,
   FaXmark,
   FaIdCard,
@@ -123,7 +123,7 @@ export function AsideContent({
         </h2>
         <ul className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-200/90">
           {languages.map((lang) => (
-            <li key={lang.code}><span>{lang.label}</span></li>
+            <li key={lang.code}><span className="text-lg font-semibold">{lang.label}</span></li>
           ))}
         </ul>
       </div>

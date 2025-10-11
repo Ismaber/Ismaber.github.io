@@ -18,8 +18,6 @@ export default function Section({
   title,
   icon: Icon,
   children,
-  delay = "0ms",
-  className,
   bodyClassName,
 }: SectionProps) {
   return (

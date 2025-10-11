@@ -83,6 +83,14 @@ export const DICTS = {
         }
       }
     },
+    toolsCategories: {
+      languages: "Languages",
+      backendDb: "Backend / DB",
+      devops: "DevOps",
+      web: "Web",
+      systems: "Systems / Virtualization",
+      robotics: "Robotics",
+    },
     themeNames: {
       indigo: "Indigo",
       emerald: "Emerald",
@@ -177,6 +185,14 @@ export const DICTS = {
           desc: "Desarrollo de una aplicación <b>Full Stack</b> utilizando el stack <b>MERN</b> (MongoDB, Express, React y Node.js), integrando la <b>API pública del Ayuntamiento de Zaragoza</b> para ofrecer información en tiempo real sobre la <b>disponibilidad de bicicletas y estaciones</b>, con funcionalidades como <b>filtros de búsqueda</b>, <b>rutas de viaje</b> y <b>visualización de datos</b>."
         }
       }
+    },
+    toolsCategories: {
+      languages: "Lenguajes",
+      backendDb: "Backend / BBDD",
+      devops: "DevOps",
+      web: "Web",
+      systems: "Sistemas / Virtualización",
+      robotics: "Robótica",
     },
     themeNames: {
       indigo: "Índigo",

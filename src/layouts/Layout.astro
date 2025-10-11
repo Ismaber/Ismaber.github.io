@@ -1,52 +1,144 @@
 ---
+// src/layouts/Base.astro
 import '../styles/global.css'
 import Background from "../components/Background.astro";
 import { t } from '../i18n/store.ts';
 
-// Determine the current locale based on Astro's runtime.  Fallback to
-// Spanish if no locale is present (this can happen during dev
-// preview).  The locale is used for the <html> lang attribute and to
-// select the appropriate translation strings.
-const locale = (Astro.currentLocale ?? 'es') as 'es' | 'en';
+type Props = {
+  title?: string;
+  description?: string;
+  image?: string;         // ruta absoluta o relativa a /public
+  noindex?: boolean;      // opcional para desindexar páginas concretas
+}
 
-// Compute a translated page title.  All pages share the same title,
-// defined in your translation dictionaries (dicts.ts).
-const pageTitle = t(locale, 'title');
+const locale = (Astro.currentLocale ?? 'es') as 'es' | 'en';
+const pageTitleDefault = t(locale, 'title');
+
+const {
+  title = pageTitleDefault,
+  description = t(locale, 'meta.description') ?? '',
+  image = '/og-default.jpg',
+  noindex = false
+} = Astro.props as Props;
+
+// Requiere `site` definido en astro.config.(m)js
+const canonical = new URL(Astro.url.pathname, Astro.site);
+
+// Hreflang: ajusta tus rutas reales (ej. /en/... para inglés)
+const path = Astro.url.pathname;
+const altEs = path.replace(/^\/en(\/|$)/, '/');      // versión ES
+const altEn = path.startsWith('/en') ? path : `/en${path}`; // versión EN
+
+const siteName = t(locale, 'siteName') ?? 'Mi Portfolio';
+const twitterHandle = null;
+const ogImage = image.startsWith('http') ? image : new URL(image, Astro.site).href;
+
+const robotsContent = noindex ? 'noindex, nofollow' : 'index, follow';
 ---
 
 <!doctype html>
 <html lang={locale} class="scroll-smooth">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
-		<meta name="color-scheme" content="dark light" />
-		<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
-		<meta name="theme-color" media="(prefers-color-scheme: dark)"  content="#0b1020" />
-		<title>{pageTitle}</title>
-		<script is:inline>
-			(() => {
-				try {
-					const stored = localStorage.getItem('theme');
-					const prefersDark = matchMedia('(prefers-color-scheme: dark)').matches;
-					let theme = stored || (prefersDark ? 'indigo-dark' : 'indigo');
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)"  content="#0b1020" />
 
-					const root = document.documentElement;
-					root.classList.add(theme);
-					root.setAttribute('data-theme', theme);
-					if (theme.endsWith('-dark')) {
-						root.classList.add('dark');
-						root.style.colorScheme = 'dark';      // aquí para el primer render
-					} else {
-						root.style.colorScheme = 'light';
-					}
-				} catch {}
-			})();
-		</script>
-	</head>
-	<body>
-		<Background/>
-		<slot />
-	</body>
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content={robotsContent} />
+		<link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="canonical" href={canonical.href} />
+
+    <!-- i18n / hreflang -->
+    <link rel="alternate" href={new URL(altEs, Astro.site).href} hreflang="es" />
+    <link rel="alternate" href={new URL(altEn, Astro.site).href} hreflang="en" />
+    <link rel="alternate" href={canonical.href} hreflang="x-default" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.href} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content={locale === 'es' ? 'es_ES' : 'en_US'} />
+    <meta property="og:locale:alternate" content={locale === 'es' ? 'en_US' : 'es_ES'} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    {twitterHandle && <meta name="twitter:site" content={twitterHandle} />}
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- JSON-LD: Person + WebSite + WebPage (ajusta datos) -->
+    <script type="application/ld+json">
+      {JSON.stringify({
+        "@context": "https://schema.org",
+        "@graph": [
+          // PERSONA (autor del sitio)
+          {
+            "@type": "Person",
+            "@id": new URL('#me', Astro.site).href,
+            "name": "Tu Nombre",
+            "url": Astro.site,
+            "sameAs": [
+              "https://github.com/Ismaber",
+              "https://www.linkedin.com/in/ismael-berdusán-muñoz-a72a41338/"
+            ]
+          },
+
+          // SITIO WEB
+          {
+            "@type": "WebSite",
+            "@id": new URL('#website', Astro.site).href,
+            "url": Astro.site,
+            "name": siteName,
+            "inLanguage": locale
+          },
+
+          // PÁGINA ACTUAL
+          {
+            "@type": "WebPage",
+            "@id": canonical.href + '#webpage',
+            "url": canonical.href,
+            "name": title,
+            "isPartOf": { "@id": new URL('#website', Astro.site).href },
+            "about": { "@id": new URL('#me', Astro.site).href },
+            "description": description,
+            "image": ogImage,
+            "inLanguage": locale
+          }
+        ]
+      })}
+    </script>
+
+    <!-- Tema al primer paint -->
+    <script is:inline>
+      (() => {
+        try {
+          const stored = localStorage.getItem('theme');
+          const prefersDark = matchMedia('(prefers-color-scheme: dark)').matches;
+          let theme = stored || (prefersDark ? 'indigo-dark' : 'indigo');
+          const root = document.documentElement;
+          root.classList.add(theme);
+          root.setAttribute('data-theme', theme);
+          if (theme.endsWith('-dark')) {
+            root.classList.add('dark');
+            root.style.colorScheme = 'dark';
+          } else {
+            root.style.colorScheme = 'light';
+          }
+        } catch {}
+      })();
+    </script>
+  </head>
+  <body>
+    <Background/>
+    <slot />
+  </body>
 </html>

@@ -3,7 +3,8 @@ import Section from './Section.tsx';
 import { t } from '../i18n/store.ts';
 import { Chip } from "@heroui/react";
 import { FaCircleUser, FaBriefcase, FaGraduationCap, FaWrench } from 'react-icons/fa6';
-import { ResponsiveAside } from './Aside';
+import { ResponsiveAside, type SocialLink } from './Aside';
+import ToolsByCategory from './ToolsByCategory';
 
 const locale = (Astro.currentLocale ?? 'es') as 'es' | 'en';
 
@@ -21,7 +22,7 @@ const skills = [
   t(locale, 'skills.initiative'),
 ];
 
-const socialLinks = [
+const socialLinks: SocialLink[] = [
   { kind: 'linkedin', href: 'https://www.linkedin.com/in/ismael-berdusán-muñoz-a72a41338/', label: 'LinkedIn' },
   { kind: 'github', href: 'https://github.com/Ismaber', label: 'GitHub' },
 ];
@@ -83,7 +84,6 @@ const experiences: ExperienceItem[] =
         id="about"
         title={t(locale, 'sections.about')}
         icon={FaCircleUser}
-        delay="0ms"
       >
         <div class="rt leading-7 sm:leading-8" set:html={t(locale, 'about.text')}></div>
       </Section>
@@ -93,7 +93,6 @@ const experiences: ExperienceItem[] =
         id="experience"
         title={t(locale, 'sections.experience')}
         icon={FaBriefcase}
-        delay="80ms"
       >
         <div class="pt-1">
           <ol class="relative ml-3 md:ml-4 pl-6 md:pl-7
@@ -136,7 +135,6 @@ const experiences: ExperienceItem[] =
         id="education"
         title={t(locale, 'sections.education')}
         icon={FaGraduationCap}
-        delay="160ms"
       >
         <div class="grid gap-4 pt-1">
           <div class="border border-slate-200 bg-white rounded-xl p-3.5 dark:border-slate-800 dark:bg-slate-900">
@@ -178,20 +176,9 @@ const experiences: ExperienceItem[] =
         id="tools"
         title={t(locale, 'sections.tools')}
         icon={FaWrench}
-        delay="240ms"
       >
         <div class="pt-1">
-          <div class="flex flex-wrap gap-2">
-            {[
-              'Python','JavaScript','C','C++','Java','Kotlin','Linux','Shell','SQL',
-              'Docker','Docker Compose','React','Next.js','CI/CD','Openstack',
-              'KVM / QEMU','Git','ROS 2','Tailwind','Github Actions'
-            ].map((tool) => (
-              <Chip key={tool} variant="solid" color="primary" size="lg" radius="sm">
-                {tool}
-              </Chip>
-            ))}
-          </div>
+          <ToolsByCategory client:visible  locale={locale} />
         </div>
       </Section>
     </div>

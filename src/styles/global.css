@@ -176,5 +176,13 @@ html {
   @media (prefers-reduced-motion: reduce) {
     .tool-chip { opacity: 1 !important; transform: none !important; animation: none !important; }
   }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-up {
+    animation: fade-up .5s cubic-bezier(.22,.8,.36,1) both;
+  }
 }
 

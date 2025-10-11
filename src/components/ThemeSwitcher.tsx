@@ -1,6 +1,6 @@
 // src/components/ThemeColorControls.tsx
-import React, { useEffect, useMemo, useState } from "react";
-import { Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/react";
+import { useEffect, useState } from "react";
+import { Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Tooltip } from "@heroui/react";
 import { FaPalette, FaSun, FaMoon } from "react-icons/fa6";
 import { useTheme } from "../hooks/useTheme";
 import { DICTS, type Locale } from "../i18n/dicts";
@@ -105,6 +105,16 @@ export function ThemeColorRail({ locale = "es" as Locale }: { locale?: Locale })
         const tone = THEME_TONES[opt.key] ?? THEME_TONES.indigo;
 
         return (
+          <Tooltip 
+            classNames={{
+              base: [
+                "bg-white rounded-lg dark:bg-slate-900",
+              ],
+              content: ["text-black rounded-lg bg-white dark:text-white dark:bg-slate-900"],
+            }}
+            content={opt.label}
+            placement="right"  
+          >
           <Button
             key={opt.key}
             isIconOnly
@@ -121,6 +131,7 @@ export function ThemeColorRail({ locale = "es" as Locale }: { locale?: Locale })
           >
             <span aria-hidden className={`size-4 rounded-sm ${opt.swatch}`} />
           </Button>
+          </Tooltip>
         );
       })}
     </nav>

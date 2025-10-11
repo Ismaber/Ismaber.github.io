@@ -116,15 +116,12 @@ export default function SideNav({
         variant={isActive ? "solid" : "ghost"}
         radius="md"
         className="min-w-10 min-h-10"
-        // toque de accesibilidad/hover sin romper el tema
         classNames={{
           base:
             "transition " +
             (isActive
               ? "shadow-md hover:opacity-95"
               : "hover:opacity-90"),
-          // opcional: afinar el borde del estado bordered
-          // wrapper: !isActive ? "border-primary/40" : "",
         }}
       >
         {icon}
