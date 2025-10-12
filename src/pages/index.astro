@@ -1,25 +1,114 @@
----
-import Header from '../components/Header.astro';
-import SideNav from '../components/SideNav';
-import Layout from '../layouts/Layout.astro';
-import MainContent from '../components/MainContent.astro';
-import { t } from '../i18n/store.ts';
-import ThemeColorControls from '../components/ThemeSwitcher';
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Redirigiendo…</title>
+    <meta name="robots" content="noindex" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      html,body{height:100%;margin:0}
+      body{
+        display:grid;
+        place-items:center;
+        font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Helvetica Neue",Arial,"Noto Sans","Apple Color Emoji","Segoe UI Emoji";
+        color:CanvasText;
+        background:Canvas;
+      }
 
-const locale = (Astro.currentLocale ?? 'es') as 'es' | 'en';
-const navLabels = {
-  about: t(locale, 'sections.about'),
-  experience: t(locale, 'sections.experience'),
-  education: t(locale, 'sections.education'),
-  tools: t(locale, 'sections.tools'),
-};
----
+      /* Contenedor spinner + texto alineados */
+      .status{
+        display:inline-flex;
+        align-items:center;
+        gap:.75rem;
+        text-align:center;
+        line-height:1;
+      }
 
-<Layout>
-  <Header />
-  <SideNav client:load labels={navLabels} />
-  <ThemeColorControls client:load locale={locale} />
-  <main id="content" role="main">
-    <MainContent />
-  </main>
-</Layout>
+      /* Spinner */
+      .spin{
+        width:48px;height:48px;
+        display:inline-block;
+        border:4px solid currentColor;
+        border-right-color:transparent;
+        border-radius:50%;
+        animation:spin .7s linear infinite;
+      }
+      @keyframes spin{to{transform:rotate(1turn)}}
+
+      /* Respeta reducción de movimiento */
+      @media (prefers-reduced-motion: reduce){
+        .spin{animation:none}
+      }
+
+      /* Modo oscuro automático si aplica */
+      @media (prefers-color-scheme: dark){
+        body{background:#0b0b0c;color:#e6e6e6}
+      }
+
+      .wrap{
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        gap:.75rem;
+      }
+
+      .hint{opacity:.7;font-size:.9375rem}
+      .links a{color:inherit}
+    </style>
+  </head>
+  <body>
+    <div class="wrap" role="status" aria-live="polite" aria-atomic="true">
+      <div class="status">
+        <span class="spin" aria-hidden="true"></span>
+        <span>Redirigiendo…</span>
+      </div>
+
+      <noscript class="hint">
+        Si no ocurre nada, ve a
+        <span class="links"><a href="/es/">/es/</a> o <a href="/en/">/en/</a></span>.
+      </noscript>
+    </div>
+
+    <script>
+      (function () {
+        const SUPPORTED = ['es','en'];
+        const DEFAULT_LOCALE = 'en';
+        const BASE = '/'; // si fuese Project Page, usa '/mi-repo/'
+
+        // Une BASE + path normalizando la barra y evitando //.
+        const join = (p: string) =>
+          (BASE.endsWith('/') ? BASE : BASE + '/')
+          + p.replace(/^\//,'');
+
+        // Evita bucles si ya estás en /es o /en
+        if (/^\/(es|en)(\/|$)/.test(location.pathname)) return;
+
+        // 1) Override por query ?lang=es|en
+        const q = location.search.match(/[?&]lang=(es|en)\b/i);
+        if (q) {
+          const lang = q[1].toLowerCase();
+          try { localStorage.setItem('prefLocale', lang); } catch {}
+          location.replace(join(lang + '/'));
+          return;
+        }
+
+        // 2) Preferencia guardada
+        try {
+          const saved = localStorage.getItem('prefLocale');
+          if (saved && SUPPORTED.includes(saved)) {
+            location.replace(join(saved + '/'));
+            return;
+          }
+        } catch {}
+
+        // 3) Detección por navegador (es-ES, es-419, etc. → es)
+        const langs = (navigator.languages?.length ? navigator.languages : [navigator.language || ''])
+          .map(l => String(l).toLowerCase());
+        const baseLangs = langs.map(l => l.split('-')[0]);
+
+        const target = baseLangs.includes('es') ? 'es' : DEFAULT_LOCALE;
+        location.replace(join(target + '/'));
+      })();
+    </script>
+  </body>
+</html>

@@ -2,15 +2,13 @@
 // src/components/Background.astro
 ---
 <div
+  id="background-root"
   aria-hidden="true"
   class="pointer-events-none fixed inset-0 -z-10 w-[100vw]
          h-screen min-h-[100svh] min-h-[100dvh] overflow-hidden"
 >
   <!-- Base (light/dark) -->
   <div class="absolute inset-0 z-0">
-    <!-- La transición de opacidad de la capa base se ha eliminado para evitar que
-         ambas capas sean parcialmente transparentes a la vez, lo que dejaba ver
-         el fondo blanco del body. La capa oscura pasa de 0 a 100 sin animación. -->
     <div class="absolute inset-0 bg-gradient-to-b from-slate-100 to-slate-200 dark:opacity-0"></div>
     <div class="absolute inset-0 bg-gradient-to-b from-slate-950 to-slate-900 opacity-0 dark:opacity-100"></div>
   </div>
@@ -22,9 +20,8 @@
            dark:bg-[radial-gradient(1100px_700px_at_12%_8%,hsl(var(--heroui-primary-400))_/_16%,transparent_62%),radial-gradient(1000px_650px_at_88%_12%,hsl(var(--heroui-secondary-400))_/_12%,transparent_58%),radial-gradient(900px_600px_at_50%_92%,theme(colors.teal.300)_/_10%,transparent_55%)]"
   ></div>
 
-  <!-- Auroras decorativas (sin parallax ni animaciones) -->
+  <!-- Auroras decorativas -->
   <div class="absolute inset-0 z-0 mix-blend-screen">
-    <!-- Aurora 1 -->
     <div class="absolute inset-0">
       <div
         class="absolute -top-24 -left-20 w-[42rem] h-[42rem] opacity-60
@@ -33,8 +30,6 @@
                blur-3xl"
       ></div>
     </div>
-
-    <!-- Aurora 2 -->
     <div class="absolute inset-0">
       <div
         class="absolute top-[20%] right-[-10%] w-[36rem] h-[36rem] opacity-55
@@ -43,8 +38,6 @@
                blur-3xl"
       ></div>
     </div>
-
-    <!-- Aurora 3 -->
     <div class="absolute inset-0">
       <div
         class="absolute bottom-[-10%] left-1/2 -translate-x-1/2 w-[48rem] h-[48rem] opacity-45
@@ -55,26 +48,12 @@
     </div>
   </div>
 
-  <!-- Blobs flotantes -->
-  <div
-    class="absolute -top-32 -left-32 z-0 w-[24rem] h-[24rem] sm:w-[36rem] sm:h-[36rem]
-           rounded-full blur-2xl sm:blur-3xl
-           bg-indigo-400/30 dark:bg-indigo-300/20"
-  ></div>
+  <!-- Blobs -->
+  <div class="absolute -top-32 -left-32 z-0 w-[24rem] h-[24rem] sm:w-[36rem] sm:h-[36rem] rounded-full blur-2xl sm:blur-3xl bg-indigo-400/30 dark:bg-indigo-300/20"></div>
+  <div class="absolute -bottom-40 -right-24 z-0 w-[22rem] h-[22rem] sm:w-[30rem] sm:h-[30rem] rounded-full blur-2xl sm:blur-3xl bg-fuchsia-400/25 dark:bg-fuchsia-500/16"></div>
+  <div class="absolute top-[42%] left-1/2 -translate-x-1/2 z-0 w-[20rem] h-[20rem] sm:w-[26rem] sm:h-[26rem] rounded-full blur-2xl sm:blur-3xl bg-teal-400/24 dark:bg-teal-400/14"></div>
 
-  <div
-    class="absolute -bottom-40 -right-24 z-0 w-[22rem] h-[22rem] sm:w-[30rem] sm:h-[30rem]
-           rounded-full blur-2xl sm:blur-3xl
-           bg-fuchsia-400/25 dark:bg-fuchsia-500/16"
-  ></div>
-
-  <div
-    class="absolute top-[42%] left-1/2 -translate-x-1/2 z-0 w-[20rem] h-[20rem] sm:w-[26rem] sm:h-[26rem]
-           rounded-full blur-2xl sm:blur-3xl
-           bg-teal-400/24 dark:bg-teal-400/14"
-  ></div>
-
-  <!-- Beams (rayos) girando MUY lento -->
+  <!-- Beams -->
   <div
     class="absolute inset-[-15%] z-0 mix-blend-soft-light opacity-[0.08] dark:opacity-[0.12]
            [mask-image:radial-gradient(900px_700px_at_50%_40%,_#000_60%,_transparent_100%)]"
@@ -103,7 +82,7 @@
     "
   ></div>
 
-  <!-- Viñeta / enfocado al centro -->
+  <!-- Viñeta -->
   <div
     class="absolute inset-0 z-0
            [mask-image:radial-gradient(1200px_800px_at_50%_30%,_#000_45%,_transparent_100%)]
@@ -111,7 +90,7 @@
            dark:bg-[radial-gradient(1200px_800px_at_50%_30%,transparent,rgba(0,0,0,0.22))]"
   ></div>
 
-  <!-- Grid sutil (ahora con movimiento) -->
+  <!-- Grid sutil -->
   <div
     class="absolute inset-0 z-10 opacity-40 dark:opacity-35
            [background-image:radial-gradient(rgba(2,6,23,.26)_1px,transparent_1px)]

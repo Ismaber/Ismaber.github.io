@@ -59,9 +59,9 @@ const experiences: ExperienceItem[] =
            grid grid-cols-1 lg:[grid-template-columns:320px_1fr]
            gap-6 lg:gap-8 items-start"
   >
-    <!-- Aside (puedes envolverlo con wrapper sticky si quieres) -->
+    <!-- Aside -->
     <ResponsiveAside
-      client:visible
+      client:load
       imgSrc="/foto.png"
       altText={t(locale, 'profile.alt')}
       headline={t(locale, 'headline')}

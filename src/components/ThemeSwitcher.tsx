@@ -100,37 +100,35 @@ export function ThemeColorRail({ locale = "es" as Locale }: { locale?: Locale })
         "transition",
       ].join(" ")}
     >
-      {options.map(opt => {
+      {options.map((opt) => {
         const isActive = opt.key === baseTheme;
         const tone = THEME_TONES[opt.key] ?? THEME_TONES.indigo;
 
         return (
-          <Tooltip 
+          <Tooltip
+            key={opt.key}
             classNames={{
-              base: [
-                "bg-white rounded-lg dark:bg-slate-900",
-              ],
+              base: ["bg-white rounded-lg dark:bg-slate-900"],
               content: ["text-black rounded-lg bg-white dark:text-white dark:bg-slate-900"],
             }}
             content={opt.label}
-            placement="right"  
+            placement="right"
           >
-          <Button
-            key={opt.key}
-            isIconOnly
-            color="default"
-            radius="md"
-            className={[
-              "min-w-10 min-h-10 transition",
-              isActive ? `${tone.solid}` : `${tone.ghost} ${tone.hoverFill}`,
-            ].join(" ")}
-            aria-pressed={isActive}
-            aria-label={opt.label}
-            title={opt.label}
-            onPress={() => changeBaseTheme(String(opt.key))}
-          >
-            <span aria-hidden className={`size-4 rounded-sm ${opt.swatch}`} />
-          </Button>
+            <Button
+              isIconOnly
+              color="default"
+              radius="md"
+              className={[
+                "min-w-10 min-h-10 transition",
+                isActive ? `${tone.solid}` : `${tone.ghost} ${tone.hoverFill}`,
+              ].join(" ")}
+              aria-pressed={isActive}
+              aria-label={opt.label}
+              title={opt.label}
+              onPress={() => changeBaseTheme(String(opt.key))}
+            >
+              <span aria-hidden className={`size-4 rounded-sm ${opt.swatch}`} />
+            </Button>
           </Tooltip>
         );
       })}

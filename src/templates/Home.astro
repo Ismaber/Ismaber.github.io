@@ -1,0 +1,25 @@
+---
+import Header from '../components/Header.astro';
+import SideNav from '../components/SideNav';
+import Layout from '../layouts/Layout.astro';
+import MainContent from '../components/MainContent.astro';
+import { t } from '../i18n/store.ts';
+import ThemeColorControls from '../components/ThemeSwitcher';
+
+const locale = (Astro.currentLocale ?? 'es') as 'es' | 'en';
+const navLabels = {
+  about: t(locale, 'sections.about'),
+  experience: t(locale, 'sections.experience'),
+  education: t(locale, 'sections.education'),
+  tools: t(locale, 'sections.tools'),
+};
+---
+
+<Layout>
+  <Header />
+  <SideNav client:load labels={navLabels} />
+  <ThemeColorControls client:load locale={locale} />
+  <main id="content" role="main">
+    <MainContent />
+  </main>
+</Layout>

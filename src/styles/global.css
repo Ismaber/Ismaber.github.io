@@ -24,6 +24,7 @@ html {
   /* compensa el header + un extra configurable */
   scroll-padding-top: calc(var(--header-h, 0px) + var(--extra-offset, 0px));
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 }
 
 
