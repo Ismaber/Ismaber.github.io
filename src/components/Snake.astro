@@ -1,0 +1,566 @@
+---
+import { GameCtrlFab, GameExitFab, GameTakeoverFab } from './GameFabs';
+
+// Props opcionales (IDs personalizables)
+type Props = {
+  pageShellId?: string;       // contenedor “principal” (se oculta al jugar)
+  backgroundRootId?: string;  // fondo para quitar máscara durante el juego
+};
+const { pageShellId = 'page-shell', backgroundRootId = 'background-root' } = Astro.props as Props;
+---
+
+<!-- Capa de snake (fondo + IA) -->
+<div
+  id="snake-layer"
+  class="pointer-events-none fixed inset-0 z-[-5] opacity-40 dark:opacity-40
+         [mask-image:radial-gradient(900px_700px_at_50%_35%,_#000_55%,_transparent_100%)]"
+  aria-hidden="true"
+>
+  <canvas id="snake-bg" class="w-full h-full"></canvas>
+</div>
+
+<!-- Botón easter egg -->
+<GameCtrlFab game="snake"/>
+
+<!-- Overlay a pantalla completa (dialog accesible) -->
+<div
+  id="snake-overlay"
+  class="fixed inset-0 z-[1000] hidden opacity-0 transition-opacity duration-300"
+  role="dialog"
+  aria-modal="true"
+  tabindex="-1"
+>
+  <canvas id="snake-play" class="w-full h-full block"></canvas>
+
+  <!-- Leyenda translúcida (se oculta en móviles) -->
+  <div
+    id="snake-hint"
+    class="pointer-events-none absolute left-1/2 -translate-x-1/2 top-4
+           text-xs sm:text-sm px-3 py-1.5 rounded-full
+           bg-white/60 text-slate-900 ring-1 ring-black/10 backdrop-blur
+           dark:bg-slate-900/60 dark:text-white dark:ring-white/10"
+  >
+    Usa ← ↑ → ↓ o WASD para moverte
+  </div>
+
+  <!-- Controles -->
+  <GameExitFab game="snake"/>
+  <GameTakeoverFab game="snake" />
+
+  <!-- Joystick móvil (sólo en punteros "coarse" y MODO JUGADOR) -->
+  <div
+    id="snake-joy"
+    class="fixed bottom-6 left-6 select-none"
+    aria-hidden="true"
+  >
+    <div
+      id="joy-base"
+      class="relative w-28 h-28 rounded-full
+             bg-slate-900/25 ring-1 ring-black/20 backdrop-blur
+             dark:bg-white/15 dark:ring-white/10"
+    >
+      <div
+        id="joy-stick"
+        class="absolute left-1/2 top-1/2 -translate-y-0 translate-x-0
+               w-14 h-14 rounded-full
+               bg-white/80 ring-1 ring-black/10 shadow
+               dark:bg-slate-800/80 dark:ring-white/10"
+      ></div>
+    </div>
+  </div>
+</div>
+
+<style is:global>
+/* --- Estados controlados por CSS --- */
+/* Overlay abierto: oculta el botón flotante principal */
+body.snake-open #snake-ctrl { display: none !important; }
+
+/* Modo jugador: oculta el botón "Tomar el control" */
+#snake-overlay.player-mode #snake-takeover { display: none !important; }
+
+/* Joystick: SIEMPRE oculto por defecto */
+#snake-joy { display: none !important; }
+
+/* Sólo en dispositivos táctiles (puntero "coarse") y en modo jugador */
+@media (pointer: coarse) {
+  #snake-overlay.player-mode #snake-joy { display: block !important; pointer-events: auto !important; }
+  /* Ocultar la leyenda en móviles */
+  #snake-hint { display: none !important; }
+}
+
+/* Sólo estilos del snake */
+.snake-play { -webkit-mask-image:none!important; mask-image:none!important; opacity:.9!important; }
+.page-hidden {
+  opacity:0!important; visibility:hidden!important; pointer-events:none!important; user-select:none!important;
+  transition: opacity .25s ease;
+}
+
+/* Reduce motion: desactiva el bucle si el usuario lo pide */
+@media (prefers-reduced-motion: reduce) {
+  #snake-layer, #snake-overlay { animation: none !important; }
+}
+</style>
+
+<script is:inline>
+  window.addEventListener('DOMContentLoaded', () => {
+    // --- Props recibidas desde Astro (sin evals raros)
+    const pageShellId = (Astro.props?.pageShellId ?? 'page-shell');
+    const backgroundRootId = (Astro.props?.backgroundRootId ?? 'background-root');
+
+    // --- Refs DOM
+    const bgCanvas   = document.getElementById('snake-bg');
+    const playCanvas = document.getElementById('snake-play');
+    const layer      = document.getElementById('snake-layer');
+    const ctrlBtn    = document.getElementById('snake-ctrl');
+    const overlay    = document.getElementById('snake-overlay');
+    const exitBtn    = document.getElementById('snake-exit');
+    const takeoverBtn= document.getElementById('snake-takeover');
+    const pageShell  = document.getElementById(pageShellId);
+    const bgRoot     = document.getElementById(backgroundRootId);
+    // joystick
+    const joyBase  = document.getElementById('joy-base');
+    const joyStick = document.getElementById('joy-stick');
+
+    if (!bgCanvas || !layer || !ctrlBtn || !overlay || !exitBtn || !playCanvas) return;
+
+    // --- Accesibilidad / motion
+    const mqReduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let reduce = mqReduce.matches;
+    mqReduce.addEventListener?.('change', e => { reduce = e.matches; });
+
+    // --- Helpers ocultar página
+    const keepIds = new Set(['snake-overlay','snake-ctrl','snake-layer', backgroundRootId]);
+    const hidePage = () => {
+      for (const el of Array.from(document.body.children)) {
+        if (!keepIds.has(el.id)) { el.classList.add('page-hidden'); el.setAttribute('inert',''); }
+      }
+    };
+    const showPage = () => {
+      for (const el of Array.from(document.body.children)) {
+        if (!keepIds.has(el.id)) { el.classList.remove('page-hidden'); el.removeAttribute('inert'); }
+      }
+    };
+
+    // --- Contextos
+    const bgCtx   = bgCanvas.getContext('2d', { alpha: true });
+    const playCtx = playCanvas.getContext('2d', { alpha: true });
+
+    // --- Tema/colores
+    const mqDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const cssVar = (n,f='') => getComputedStyle(document.documentElement).getPropertyValue(n).trim() || f;
+    const theme = () => {
+      const primary = cssVar('--heroui-primary-400','222 47% 50%');
+      const secondary = cssVar('--heroui-secondary-400','280 60% 55%');
+      const isDark = document.documentElement.classList.contains('dark') || mqDark.matches;
+      return {
+        isDark,
+        snake: isDark ? `hsl(${primary})`   : 'rgba(2,6,23,1)',
+        food : isDark ? `hsl(${secondary})` : 'rgba(2,6,23,1)'
+      };
+    };
+    mqDark.addEventListener?.('change', () => drawAll());
+    new MutationObserver(() => drawAll())
+      .observe(document.documentElement, { attributes:true, attributeFilter:['class'] });
+
+    // --- Tamaños / constantes
+    const DPR   = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+    const CELL  = 22;
+    let cols=0, rows=0, Wb=0, Hb=0;
+
+    const sizeCanvas = (canvas) => {
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      canvas.width = w * DPR; canvas.height = h * DPR;
+      return { w, h };
+    };
+    const resizePlayCanvas = () => {
+      playCanvas.width  = bgCanvas.clientWidth  * DPR;
+      playCanvas.height = bgCanvas.clientHeight * DPR;
+      playCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    };
+    const resizeAll = () => {
+      const {w,h} = sizeCanvas(bgCanvas);
+      Wb=w; Hb=h;
+      bgCtx.setTransform(DPR,0,0,DPR,0,0);
+      cols = Math.max(10, Math.floor(Wb / CELL));
+      rows = Math.max( 8, Math.floor(Hb / CELL));
+      if (overlayVisible()) resizePlayCanvas();
+    };
+
+    // --- Estado juego
+    let snake = [];
+    let occSet = new Set();
+    let dir = {x:1,y:0};
+    let food = null;
+    let running = true;
+    let playerMode = false;
+    const SPEED_AI     = 10;
+    const SPEED_PLAYER = 200;
+    let STEP_MS = SPEED_AI;
+
+    // Cola anti-doble-giro
+    let nextDir = {x:1,y:0};
+    let turnQueued = false;
+
+    // Timestep fijo (acumulador)
+    let acc = 0;
+    let prevTime = 0;
+    const MAX_STEPS_PER_FRAME = 3; // evita "espiral de la muerte"
+
+    const key = p => `${p.x},${p.y}`;
+    const inBounds = p => p.x>=0 && p.x<cols && p.y>=0 && p.y<rows;
+    const occ = p => occSet.has(key(p));
+    const rnd = () => ({ x: (Math.random()*cols)|0, y: (Math.random()*rows)|0 });
+
+    const placeFood = () => {
+      if (occSet.size >= cols*rows) return (food=null);
+      let p; do { p = rnd(); } while (occ(p));
+      food = p;
+    };
+
+    const resetSnake = () => {
+      const start = { x: (cols/3)|0, y: (rows/2)|0 };
+      snake = [start, {x:start.x-1,y:start.y}, {x:start.x-2,y:start.y}];
+      occSet.clear();
+      for (const s of snake) occSet.add(key(s));
+      dir = {x:1,y:0};
+      nextDir = dir; turnQueued = false;
+      placeFood();
+    };
+
+    // --- IA (BFS)
+    const findPath = (start, goal) => {
+      if (!goal) return null;
+      const body = new Set(occSet);
+      const tailKey = key(snake[snake.length-1]);
+      body.delete(tailKey);
+      const q = new Array(cols*rows);
+      let qs=0, qe=0; const push=v=>{q[qe++]=v}, shift=()=>q[qs++];
+      push(start);
+      const prev=new Map(), seen=new Set([key(start)]);
+      while(qs<qe){
+        const cur=shift();
+        if(cur.x===goal.x&&cur.y===goal.y){
+          const path=[]; let c=cur;
+          while(prev.has(key(c))) { path.push(c); c=prev.get(key(c)); }
+          path.reverse(); return path;
+        }
+        for(const nb of[{x:cur.x+1,y:cur.y},{x:cur.x-1,y:cur.y},{x:cur.x,y:cur.y+1},{x:cur.x,y:cur.y-1}]){
+          const k=key(nb);
+          if(!inBounds(nb)||seen.has(k)||body.has(k)) continue;
+          seen.add(k); prev.set(k,cur); push(nb);
+        }
+      }
+      return null;
+    };
+
+    const safeDirs = (head) => {
+      const opts = [{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}];
+      // prioriza seguir recto
+      opts.sort((a,b)=>((a.x===dir.x&&a.y===dir.y)?-1:0)-((b.x===dir.x&&b.y===dir.y)?-1:0));
+      const cands=[];
+      for(const d of opts){
+        const n={x:head.x+d.x, y:head.y+d.y};
+        if(inBounds(n)&&!occ(n)) cands.push(d);
+      }
+      if(food){
+        cands.sort((d1,d2)=>{
+          const n1={x:head.x+d1.x,y:head.y+d1.y}, n2={x:head.x+d2.x,y:head.y+d2.y};
+          return (Math.abs(n1.x-food.x)+Math.abs(n1.y-food.y))-(Math.abs(n2.x-food.x)+Math.abs(n2.y-food.y));
+        });
+      }
+      return cands;
+    };
+
+    // --- Dibujo
+    const roundRect=(ctx,x,y,w,h,r)=>{
+      ctx.beginPath();ctx.moveTo(x+r,y);
+      ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);
+      ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+    };
+
+    const render=(ctx)=>{
+      const {isDark,snake:cSnake,food:cFood}=theme();
+      const segA=isDark?0.30:0.24, headA=Math.min(1,segA+0.10);
+      ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+      ctx.fillStyle=cSnake; ctx.globalAlpha=segA;
+      for(let i=snake.length-1;i>=0;i--){
+        const s=snake[i]; roundRect(ctx,s.x*CELL+3,s.y*CELL+3,CELL-6,CELL-6,4); ctx.fill();
+      }
+      if(snake[0]){ const s=snake[0]; ctx.globalAlpha=headA;
+        roundRect(ctx,s.x*CELL+2,s.y*CELL+2,CELL-4,CELL-4,5); ctx.fill();
+      }
+      if(food){ ctx.fillStyle=cFood; ctx.globalAlpha=isDark?0.40:0.30;
+        roundRect(ctx,food.x*CELL+6,food.y*CELL+6,CELL-12,CELL-12,4); ctx.fill();
+      }
+      ctx.globalAlpha=1;
+    };
+
+    const drawAll=()=>{ render(bgCtx); if(overlayVisible()) render(playCtx); };
+
+    // --- Un paso de simulación (1 tick)
+    const simulateTick = () => {
+      const head=snake[0];
+
+      // IA decide en cola (no toca dir directamente)
+      if(!playerMode){
+        const path=findPath(head,food);
+        if(path&&path.length){
+          const next=path[0]; nextDir={x:next.x-head.x,y:next.y-head.y};
+        }else{
+          const o=safeDirs(head);
+          if(o.length) nextDir=o[0]; else { resetSnake(); return; }
+        }
+      }
+
+      // Fijar dirección (único punto)
+      dir=nextDir;
+
+      const nextHead = { x: head.x + dir.x, y: head.y + dir.y };
+      const tail     = snake[snake.length - 1];
+
+      // ¿Vas a comer en este paso?
+      const willEat = food && nextHead.x === food.x && nextHead.y === food.y;
+
+      // Colisión con cuerpo:
+      // - Cuenta como choque si la casilla está ocupada,
+      // - excepto si es la cola y la cola SÍ va a moverse (es decir, ¡no comes!).
+      const hitsBody = occ(nextHead) && !(nextHead.x === tail.x && nextHead.y === tail.y && !willEat);
+
+      if (!inBounds(nextHead) || hitsBody) {
+        resetSnake();
+      } else {
+        snake.unshift(nextHead);
+        occSet.add(key(nextHead));
+
+        if (willEat) {
+          placeFood();                 // creces: no quitas la cola
+        } else {
+          const old = snake.pop();     // avance normal: la cola se mueve
+          occSet.delete(key(old));
+        }
+      }
+
+      // liberar cupo de giro para el siguiente tick
+      turnQueued = false;
+    };
+
+    // --- Loop de animación con timestep fijo
+    const step=(now)=>{
+      if(!running){ prevTime = now; requestAnimationFrame(step); return; }
+
+      if(prevTime===0) prevTime = now;
+
+      let dt = now - prevTime;
+      if (dt > 500) dt = 0; // clamp tras pestaña oculta
+      prevTime = now;
+
+      acc += dt;
+
+      let ticks = Math.min(MAX_STEPS_PER_FRAME, Math.floor(acc / STEP_MS));
+      while(ticks-- > 0){
+        acc -= STEP_MS;
+        simulateTick();
+      }
+
+      drawAll();
+      requestAnimationFrame(step);
+    };
+
+    // --- Overlay / input
+    const overlayVisible=()=>!overlay.classList.contains('hidden');
+
+    // Fix: botón visible al cerrar sin scroll (override temporal)
+    let ctrlOverrideUntil=0;
+    const forceShowCtrl=(ms=4000)=>{
+      ctrlOverrideUntil=performance.now()+ms;
+      ctrlBtn.classList.remove('hidden','opacity-0','translate-y-2');
+    };
+
+    // Al abrir: NO entrar en modo jugador. IA por defecto, takeover visible, joystick lo maneja CSS.
+    const openOverlay=()=>{
+      overlay.classList.remove('hidden');
+      document.body.style.overflow='hidden';
+      document.body.classList.add('snake-open');            // <<< estado CSS
+      ctrlBtn.classList.add('opacity-0','translate-y-2','hidden');
+      requestAnimationFrame(()=>{
+        overlay.classList.remove('opacity-0');
+        resizeAll(); resizePlayCanvas(); render(playCtx);
+        overlay.setAttribute('aria-modal','true');
+        (takeoverBtn ?? exitBtn)?.focus();
+      });
+      playerMode=false; STEP_MS=SPEED_AI;
+      nextDir=dir; turnQueued=false;
+      overlay.classList.remove('player-mode');              // <<< asegúrate de salir de jugador
+      layer.classList.add('snake-play');
+      pageShell?.classList.add('page-hidden');
+      pageShell?.setAttribute('inert','');
+      hidePage();
+      drawAll();
+    };
+
+    const takeControl=()=>{
+      playerMode=true; STEP_MS=SPEED_PLAYER;
+      nextDir=dir; turnQueued=false;
+      overlay.classList.add('player-mode');                 // <<< estado CSS (oculta takeover, muestra joystick en móvil)
+      exitBtn?.focus();
+    };
+
+    const closeOverlay=()=>{
+      overlay.classList.add('opacity-0');
+      setTimeout(()=>overlay.classList.add('hidden'),300);
+      document.body.style.overflow='';
+      document.body.classList.remove('snake-open');         // <<< limpia estado overlay
+      playerMode=false; STEP_MS=SPEED_AI;
+      overlay.classList.remove('player-mode');              // <<< limpia modo jugador
+      ctrlBtn.setAttribute('aria-pressed','false');
+      layer.classList.remove('snake-play');
+      pageShell?.classList.remove('page-hidden');
+      pageShell?.removeAttribute('inert');
+      showPage();
+      drawAll();
+      ctrlBtn?.focus();
+      forceShowCtrl(5000);
+      updateCtrlVisibility();
+    };
+
+    // === Helper comparación de direcciones
+    const sameDir=(a,b)=>a&&b&&a.x===b.x&&a.y===b.y;
+
+    // --- Teclado
+    const onKey=(e)=>{
+      if(!playerMode) return;
+      if(e.repeat) return;
+      const k=e.key.toLowerCase();
+      let nd=null;
+      if(k==='arrowup'||k==='w') nd={x:0,y:-1};
+      else if(k==='arrowdown'||k==='s') nd={x:0,y:1};
+      else if(k==='arrowleft'||k==='a') nd={x:-1,y:0};
+      else if(k==='arrowright'||k==='d') nd={x:1,y:0};
+      else if(k==='escape'){ closeOverlay(); return; }
+
+      if(!nd) return;
+      if(snake.length>1&&(nd.x===-dir.x&&nd.y===-dir.y)) return;
+      if(sameDir(nd,dir)||sameDir(nd,nextDir)) return;
+
+      if(!turnQueued){ nextDir=nd; turnQueued=true; e.preventDefault(); }
+    };
+
+    // --- Joystick táctil
+    let joyActive=false;
+    let joyCenter={ x:0, y:0 };
+    const BASE_R=56, STICK_R=28, DEAD=10;
+
+    const setDirFromVector=(dx,dy)=>{
+      if(Math.hypot(dx,dy)<DEAD) return;
+      const ang=Math.atan2(dy,dx);
+      const deg=ang*180/Math.PI;
+      let nd=dir;
+      if(deg>-45&&deg<=45) nd={x:1,y:0};
+      else if(deg>45&&deg<=135) nd={x:0,y:1};
+      else if(deg<=-45&&deg>-135) nd={x:0,y:-1};
+      else nd={x:-1,y:0};
+
+      if(snake.length>1&&(nd.x===-dir.x&&nd.y===-dir.y)) return;
+      if(sameDir(nd,dir)||sameDir(nd,nextDir)) return;
+
+      if(!turnQueued){ nextDir=nd; turnQueued=true; }
+    };
+
+    const moveStickTo=(dx,dy)=>{
+      const dist=Math.min(BASE_R-STICK_R, Math.hypot(dx,dy));
+      const ang=Math.atan2(dy,dx);
+      const x=Math.cos(ang)*dist;
+      const y=Math.sin(ang)*dist;
+      joyStick.style.transform=`translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+    };
+
+    const resetStick=()=>{ joyStick.style.transform='translate(-50%, -50%)'; };
+
+    const joyTouchStart=(ev)=>{
+      if(!playerMode) return;
+      joyActive=true;
+      const t=ev.touches[0];
+      const rect=document.getElementById('joy-base').getBoundingClientRect();
+      joyCenter.x=rect.left+rect.width/2;
+      joyCenter.y=rect.top+rect.height/2;
+      const dx=t.clientX-joyCenter.x, dy=t.clientY-joyCenter.y;
+      moveStickTo(dx,dy); setDirFromVector(dx,dy);
+      ev.preventDefault();
+    };
+
+    const joyTouchMove=(ev)=>{
+      if(!joyActive) return;
+      const t=ev.touches[0];
+      const dx=t.clientX-joyCenter.x, dy=t.clientY-joyCenter.y;
+      moveStickTo(dx,dy); setDirFromVector(dx,dy);
+      ev.preventDefault();
+    };
+
+    const joyTouchEnd=()=>{ joyActive=false; resetStick(); };
+
+    if(joyBase && joyStick){
+      joyBase.addEventListener('touchstart', joyTouchStart, { passive:false });
+      window.addEventListener('touchmove',  joyTouchMove,   { passive:false });
+      window.addEventListener('touchend',   joyTouchEnd,    { passive:true  });
+      window.addEventListener('touchcancel',joyTouchEnd,    { passive:true  });
+    }
+
+    // --- Botón por scroll (con override temporal tras cerrar overlay)
+    const updateCtrlVisibility=()=>{
+      if(overlayVisible()){
+        ctrlBtn.classList.add('hidden','opacity-0','translate-y-2');
+        return;
+      }
+      if(performance.now()<ctrlOverrideUntil){
+        ctrlBtn.classList.remove('hidden','opacity-0','translate-y-2');
+        return;
+      }
+      const max=(document.documentElement.scrollHeight-window.innerHeight);
+      if(max<=0){
+        ctrlBtn.classList.remove('hidden','opacity-0','translate-y-2');
+        return;
+      }
+      const p=window.scrollY/max;
+      const show=p>0.72;
+      if(show){
+        ctrlBtn.classList.remove('hidden');
+        requestAnimationFrame(()=>ctrlBtn.classList.remove('opacity-0','translate-y-2'));
+      }else{
+        ctrlBtn.classList.add('opacity-0','translate-y-2');
+        setTimeout(()=>{ if(ctrlBtn.classList.contains('opacity-0')) ctrlBtn.classList.add('hidden'); }, 300);
+      }
+    };
+
+    // --- Init
+    resizeAll(); resetSnake(); drawAll();
+    prevTime = 0; acc = 0;
+    if(!reduce) requestAnimationFrame(step);
+
+    // --- Eventos globales
+    window.addEventListener('resize', () => {
+      resizeAll();
+      if(overlayVisible()) resizePlayCanvas();
+      snake=snake.filter(inBounds);
+      if(!snake.length) resetSnake();
+      drawAll(); updateCtrlVisibility();
+    });
+    window.addEventListener('orientationchange', () => {
+      if(overlayVisible()) resizePlayCanvas(); drawAll();
+    });
+    document.addEventListener('visibilitychange', ()=>{
+      running=!document.hidden;
+      prevTime = 0; acc = 0;
+      if(running && !reduce) requestAnimationFrame(step);
+    });
+    window.addEventListener('scroll', () => {
+      ctrlOverrideUntil=0; updateCtrlVisibility();
+    }, { passive:true });
+    window.addEventListener('keydown', onKey, { passive:false });
+
+    ctrlBtn.addEventListener('click', openOverlay);
+    exitBtn.addEventListener('click', closeOverlay);
+    takeoverBtn?.addEventListener('click', takeControl);
+
+    updateCtrlVisibility();
+  });
+</script>

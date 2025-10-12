@@ -1,0 +1,758 @@
+---
+import { GameCtrlFab, GameExitFab, GameTakeoverFab } from "./GameFabs";
+
+type Props = {
+  pageShellId?: string;
+  backgroundRootId?: string;
+};
+
+const { pageShellId = "page-shell", backgroundRootId = "background-root" } = Astro.props as Props;
+---
+
+<style is:global>
+/* Estados controlados por CSS */
+body.msweep-open #msweep-ctrl { display: none !important; }
+#msweep-overlay.player-mode #msweep-takeover { display: none !important; }
+
+/* Visual del juego */
+.msweep-play { -webkit-mask-image: none !important; mask-image: none !important; opacity: .9 !important; }
+.page-hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  transition: opacity .25s ease;
+}
+
+/* Hover de celdas en modo jugador */
+#msweep-overlay.player-mode canvas#msweep-play { cursor: pointer; }
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  #msweep-layer, #msweep-overlay { animation: none !important; }
+}
+</style>
+
+<div
+  id="msweep-root"
+  data-pageshell-id={pageShellId}
+  data-bgroot-id={backgroundRootId}
+>
+  <!-- Capa de fondo (IA de fondo) -->
+  <div
+    id="msweep-layer"
+    class="pointer-events-none fixed inset-0 z-[-5] opacity-40 dark:opacity-40
+           [mask-image:radial-gradient(900px_700px_at_50%_35%,_#000_55%,_transparent_100%)]"
+    aria-hidden="true"
+  >
+    <canvas id="msweep-bg" class="w-full h-full"></canvas>
+  </div>
+
+  <!-- FAB -->
+  <GameCtrlFab game="msweep" />
+
+  <!-- Overlay fullscreen (SIN fondo opaco para que lo revelado sea transparente) -->
+  <div
+    id="msweep-overlay"
+    class="fixed inset-0 z[1000] hidden opacity-0 transition-opacity duration-300"
+    role="dialog"
+    aria-modal="true"
+    tabindex="-1"
+  >
+    <canvas id="msweep-play" class="w-full h-full block"></canvas>
+
+    <!-- Leyenda -->
+    <div
+      id="msweep-hint"
+      class="pointer-events-none absolute left-1/2 -translate-x-1/2 top-4
+             text-xs sm:text-sm px-3 py-1.5 rounded-full
+             bg-white/60 text-slate-900 ring-1 ring-black/10 backdrop-blur
+             dark:bg-slate-900/60 dark:text-white dark:ring-white/10"
+    >
+      Usa clic izquierdo para descubrir, clic derecho para marcar mina
+    </div>
+
+    <!-- Controles -->
+    <GameExitFab game="msweep" />
+    <GameTakeoverFab game="msweep" />
+  </div>
+</div>
+
+<script is:inline>
+  const mqCoarse = window.matchMedia('(pointer: coarse)');
+  const hint = document.getElementById('msweep-hint');
+  if (hint && mqCoarse.matches) {
+    hint.textContent = 'Toca para descubrir, mantén pulsado para marcar mina';
+  }
+  mqCoarse.addEventListener?.('change', e => {
+    if (hint) {
+      hint.textContent = e.matches
+        ? 'Toca para descubrir, mantén pulsado para marcar mina'
+        : 'Usa clic izquierdo para descubrir, clic derecho para marcar mina';
+    }
+  });
+</script>
+
+<script is:inline>
+  window.addEventListener("DOMContentLoaded", () => {
+    // ---- DOM
+    const root = document.getElementById("msweep-root");
+    if (!root) return;
+
+    const pageShellId = root.getAttribute("data-pageshell-id") || "page-shell";
+    const backgroundRootId = root.getAttribute("data-bgroot-id") || "background-root";
+
+    const pageShell = document.getElementById(pageShellId);
+
+    const bgCanvas = document.getElementById("msweep-bg");
+    const playCanvas = document.getElementById("msweep-play");
+    const layer = document.getElementById("msweep-layer");
+    const ctrlBtn = document.getElementById("msweep-ctrl");
+    const overlay = document.getElementById("msweep-overlay");
+    const exitBtn = document.getElementById("msweep-exit");
+    const takeoverBtn = document.getElementById("msweep-takeover");
+    const joyBase = document.getElementById("joy-base");
+    const joyStick = document.getElementById("joy-stick");
+
+    if (!bgCanvas || !playCanvas || !overlay || !layer || !ctrlBtn || !exitBtn) {
+      console.error("Minesweeper: elementos esenciales no encontrados");
+      return;
+    }
+
+    // ---- Accesibilidad / motion
+    const mqReduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let reduce = mqReduce.matches;
+    mqReduce.addEventListener?.("change", (e) => { reduce = e.matches; });
+
+    // ---- Ocultar página
+    const keepIds = new Set([
+      "msweep-overlay",
+      "msweep-ctrl",
+      "msweep-layer",
+      backgroundRootId,
+      "msweep-root",
+    ]);
+
+    const hidePage = () => {
+      for (const el of Array.from(document.body.children)) {
+        if (!keepIds.has(el.id)) {
+          el.classList.add("page-hidden");
+          el.setAttribute("inert", "");
+        }
+      }
+    };
+    const showPage = () => {
+      for (const el of Array.from(document.body.children)) {
+        if (!keepIds.has(el.id)) {
+          el.classList.remove("page-hidden");
+          el.removeAttribute("inert");
+        }
+      }
+    };
+
+    // ---- Ctx
+    const bgCtx = bgCanvas.getContext("2d", { alpha: true });
+    const playCtx = playCanvas.getContext("2d", { alpha: true });
+
+    // ---- Tema
+    const mqDark = window.matchMedia("(prefers-color-scheme: dark)");
+    const cssVar = (n, f = "") => getComputedStyle(document.documentElement).getPropertyValue(n).trim() || f;
+    const theme = () => {
+      const primary = cssVar("--heroui-primary-400", "222 47% 50%");
+      const secondary = cssVar("--heroui-secondary-400", "270 60% 55%");
+      const isDark = document.documentElement.classList.contains("dark") || mqDark.matches;
+      return {
+        isDark,
+        snakeTile: isDark ? `hsl(${primary})` : "rgba(2,6,23,1)", // base como “Snake”
+        mine: isDark ? "#f87171" : "#ef4444",
+        flag: isDark ? "#60a5fa" : "#2563eb",
+        text: isDark ? "#e5e7eb" : "#0f172a",
+        grid: isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.10)",
+        overlayText: isDark ? "#ffffff" : "#0f172a",
+      };
+    };
+    mqDark.addEventListener?.("change", () => drawAll());
+    new MutationObserver(() => drawAll()).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+
+    // ---- Tamaño / layout
+    const DPR = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+    const CELL = 22;
+    let cols = 0, rows = 0, Wb = 0, Hb = 0;
+
+    const sizeCanvas = (canvas) => {
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      canvas.width = w * DPR;
+      canvas.height = h * DPR;
+      return { w, h };
+    };
+    const resizePlayCanvas = () => {
+      playCanvas.width = bgCanvas.clientWidth * DPR;
+      playCanvas.height = bgCanvas.clientHeight * DPR;
+      playCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    };
+    const resizeAll = () => {
+      const { w, h } = sizeCanvas(bgCanvas);
+      Wb = w; Hb = h;
+      bgCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      cols = Math.max(10, Math.floor(Wb / CELL));
+      rows = Math.max(8, Math.floor(Hb / CELL));
+      if (!overlay.classList.contains("hidden")) {
+        resizePlayCanvas();
+      }
+    };
+
+    // ---- Estado
+    let board = [];
+    let minesCount = 0;
+    let running = true;
+    let playerMode = false;
+    let gameOver = false;
+    let exploded = null; // {r,c}
+
+    // 1 acción por segundo (ajusta al gusto)
+    const SPEED_AI = 10;
+    let STEP_MS = SPEED_AI;
+    let acc = 0, prevTime = 0;
+
+    const overlayVisible = () => !overlay.classList.contains("hidden");
+
+    // Vecindario
+    const inB = (r,c) => r>=0 && r<rows && c>=0 && c<cols;
+    const forNbrs = (r,c,fn) => {
+      for (let dr=-1; dr<=1; dr++) for (let dc=-1; dc<=1; dc++) {
+        if (dr===0 && dc===0) continue;
+        const nr=r+dr, nc=c+dc;
+        if (inB(nr,nc)) fn(nr,nc);
+      }
+    };
+
+    function initBoard() {
+      board = Array.from({ length: rows }, () =>
+        Array.from({ length: cols }, () => ({
+          revealed: false,
+          flagged: false,
+          value: 0,
+          mine: false,
+          exploded: false,
+        }))
+      );
+      minesCount = Math.floor((rows * cols) * 0.16);
+      let placed = 0;
+      while (placed < minesCount) {
+        const r = (Math.random() * rows) | 0;
+        const c = (Math.random() * cols) | 0;
+        if (board[r][c].mine) continue;
+        board[r][c].mine = true;
+        placed++;
+        forNbrs(r,c,(nr,nc)=>{
+          if (!board[nr][nc].mine) board[nr][nc].value++;
+        });
+      }
+      gameOver = false;
+      exploded = null;
+    }
+
+    function revealCell(r, c) {
+      const cell = board[r][c];
+      if (!cell || cell.revealed || cell.flagged) return;
+      cell.revealed = true;
+
+      if (cell.mine) {
+        cell.exploded = true;
+        gameOver = true;
+        exploded = {r, c};
+        revealAllMines();
+        return;
+      }
+
+      if (cell.value === 0) {
+        forNbrs(r,c,(nr,nc)=> {
+          if (!board[nr][nc].revealed) revealCell(nr, nc);
+        });
+      }
+    }
+
+    function chord(r,c) {
+      const cell = board[r][c];
+      if (!cell || !cell.revealed || cell.value<=0) return;
+      let flags=0, hidden=[];
+      forNbrs(r,c,(nr,nc)=>{
+        const n=board[nr][nc];
+        if (!n.revealed && n.flagged) flags++;
+        if (!n.revealed && !n.flagged) hidden.push({nr,nc});
+      });
+      if (flags === cell.value) {
+        for (const {nr,nc} of hidden) revealCell(nr,nc);
+      }
+    }
+
+    function toggleFlag(r,c) {
+      const cell = board[r][c];
+      if (!cell || cell.revealed) return;
+      cell.flagged = !cell.flagged;
+    }
+
+    function revealAllMines() {
+      for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
+        const cell = board[r][c];
+        if (cell.mine) cell.revealed = true;
+      }
+    }
+
+    function newGame() {
+      initBoard();
+      drawAll();
+    }
+
+    // ========= IA: UNA ACCIÓN POR TICK =========
+    function aiFindDeterministicAction() {
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+        const cell = board[r][c];
+        if (!cell.revealed || cell.value <= 0) continue;
+
+        let flags = 0;
+        const hiddenCells = [];
+        forNbrs(r, c, (nr, nc) => {
+          const n = board[nr][nc];
+          if (!n.revealed && n.flagged) flags++;
+          if (!n.revealed && !n.flagged) hiddenCells.push({ nr, nc });
+        });
+        if (!hiddenCells.length) continue;
+
+        if (flags === cell.value) {
+          const t = hiddenCells[0];
+          return { type: 'reveal', r: t.nr, c: t.nc };
+        }
+
+        if ((cell.value - flags) === hiddenCells.length) {
+          const t = hiddenCells.find(({nr, nc}) => !board[nr][nc].flagged);
+          if (t) return { type: 'flag', r: t.nr, c: t.nc };
+        }
+      }
+      return null;
+    }
+
+    function aiRiskForCell(r,c) {
+      let risks = [];
+      forNbrs(r,c,(nr,nc)=>{
+        const n = board[nr][nc];
+        if (n.revealed && n.value>=0) {
+          let flags=0, hidden=0;
+          forNbrs(nr,nc,(ar,ac)=>{
+            const a=board[ar][ac];
+            if (!a.revealed && a.flagged) flags++;
+            if (!a.revealed && !a.flagged) hidden++;
+          });
+          if (hidden>0) {
+            const local = Math.max(0, (n.value - flags)) / hidden;
+            risks.push(local);
+          }
+        }
+      });
+      if (!risks.length) return 0.5;
+      return Math.max(...risks);
+    }
+
+    function aiPickProbabilistic() {
+      const candidates = [];
+      for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
+        const cell = board[r][c];
+        if (!cell.revealed && !cell.flagged) {
+          const risk = aiRiskForCell(r,c);
+          candidates.push({ r, c, risk });
+        }
+      }
+      if (!candidates.length) return null;
+      candidates.sort((a,b)=>a.risk-b.risk);
+      const bestRisk = candidates[0].risk;
+      const eps = 1e-6;
+      const bestGroup = candidates.filter(x => Math.abs(x.risk - bestRisk) < eps);
+      return bestGroup[(Math.random()*bestGroup.length)|0];
+    }
+
+    function simulateAI() {
+      if (gameOver) return;
+
+      const act = aiFindDeterministicAction();
+      if (act) {
+        if (act.type === 'reveal') {
+          revealCell(act.r, act.c);
+        } else {
+          const cell = board[act.r][act.c];
+          if (cell && !cell.revealed) cell.flagged = true;
+        }
+        return;
+      }
+
+      const pick = aiPickProbabilistic();
+      if (pick) revealCell(pick.r, pick.c);
+    }
+
+    // ---- Dibujo
+    const numColor = (n) => {
+      switch (n) {
+        case 1: return "#0072B2"; // azul
+        case 2: return "#009E73"; // verde
+        case 3: return "#D55E00"; // bermellón
+        case 4: return "#CC79A7"; // magenta/púrpura
+        case 5: return "#E69F00"; // naranja
+        case 6: return "#56B4E9"; // azul cielo
+        case 7: return "#F0E442"; // amarillo (resalta mucho)
+        case 8: return "#000000"; // negro (alto contraste)
+        default: return theme().text;
+      }
+    };
+
+
+    const roundRect = (ctx,x,y,w,h,r) => {
+      ctx.beginPath();
+      ctx.moveTo(x+r, y);
+      ctx.arcTo(x+w, y,   x+w, y+h, r);
+      ctx.arcTo(x+w, y+h, x,   y+h, r);
+      ctx.arcTo(x,   y+h, x,   y,   r);
+      ctx.arcTo(x,   y,   x+w, y,   r);
+      ctx.closePath();
+    };
+
+    function drawGrid(ctx, hoverCell=null) {
+      const th = theme();
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const cell = board[r][c];
+          const x = c * CELL, y = r * CELL;
+
+          if (!cell.revealed) {
+            ctx.save();
+            ctx.globalAlpha = 0.30;
+            ctx.fillStyle = th.snakeTile;
+            roundRect(ctx, x + 3, y + 3, CELL - 6, CELL - 6, 6);
+            ctx.fill();
+
+            if (hoverCell && hoverCell.r===r && hoverCell.c===c) {
+              ctx.globalAlpha = 0.25;
+              ctx.fillRect(x + 3, y + 3, CELL - 6, CELL - 6);
+            }
+            ctx.restore();
+
+            if (cell.flagged) {
+              ctx.save();
+              ctx.translate(x, y);
+              ctx.fillStyle = th.flag;
+              ctx.beginPath();
+              ctx.moveTo(CELL*0.35, CELL*0.28);
+              ctx.lineTo(CELL*0.72, CELL*0.42);
+              ctx.lineTo(CELL*0.35, CELL*0.56);
+              ctx.closePath();
+              ctx.fill();
+              ctx.strokeStyle = th.text;
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              ctx.moveTo(CELL*0.32, CELL*0.26);
+              ctx.lineTo(CELL*0.32, CELL*0.72);
+              ctx.stroke();
+              ctx.restore();
+            }
+          } else {
+            if (cell.mine) {
+              ctx.save();
+              ctx.translate(x + CELL/2, y + CELL/2);
+              ctx.globalAlpha = 0.14;
+              ctx.fillStyle = th.mine;
+              ctx.beginPath();
+              ctx.arc(0,0, CELL*0.46, 0, Math.PI*2);
+              ctx.fill();
+              ctx.globalAlpha = 1;
+              ctx.fillStyle = th.mine;
+              ctx.beginPath();
+              ctx.arc(0,0, CELL*0.28, 0, Math.PI*2);
+              ctx.fill();
+              ctx.strokeStyle = th.mine;
+              ctx.lineWidth = 3;
+              for (let i=0;i<8;i++){
+                const a = (i*Math.PI/4);
+                ctx.beginPath();
+                ctx.moveTo(Math.cos(a)*CELL*0.12, Math.sin(a)*CELL*0.12);
+                ctx.lineTo(Math.cos(a)*CELL*0.38, Math.sin(a)*CELL*0.38);
+                ctx.stroke();
+              }
+              if (cell.exploded) {
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(-CELL*0.18, -CELL*0.18);
+                ctx.lineTo( CELL*0.18,  CELL*0.18);
+                ctx.moveTo( CELL*0.18, -CELL*0.18);
+                ctx.lineTo(-CELL*0.18,  CELL*0.18);
+                ctx.stroke();
+              }
+              ctx.restore();
+            } else if (cell.value > 0) {
+              const tx = x + CELL/2, ty = y + CELL/2 + 1;
+              ctx.font = `900 ${Math.floor(CELL * 0.60)}px ui-sans-serif, system-ui`;
+              ctx.textAlign = "center";
+              ctx.textBaseline = "middle";
+              ctx.fillStyle = numColor(cell.value);
+              ctx.fillText(cell.value.toString(), tx, ty);
+            }
+          }
+        }
+      }
+
+      if (overlayVisible() && gameOver) {
+        ctx.save();
+        ctx.globalAlpha = 0.08;
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0,0, cols*CELL, rows*CELL);
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = theme().overlayText;
+        ctx.font = `600 ${Math.floor(CELL*0.9)}px ui-sans-serif`;
+        ctx.textAlign = "center";
+        ctx.fillText("💥 BOOM", (cols*CELL)/2, (rows*CELL)/2 - CELL);
+        ctx.font = `500 ${Math.floor(CELL*0.55)}px ui-sans-serif`;
+        ctx.fillText("Clic para reiniciar", (cols*CELL)/2, (rows*CELL)/2 + CELL*0.2);
+        ctx.restore();
+      }
+    }
+
+    function drawAll(hover=null) {
+      if (bgCtx) drawGrid(bgCtx);
+      if (overlayVisible()) drawGrid(playCtx, hover);
+    }
+
+    // ---- Loop: EXACTAMENTE 1 acción por tick/frame
+    function step(now) {
+      if (!running) {
+        prevTime = now;
+        requestAnimationFrame(step);
+        return;
+      }
+      if (prevTime === 0) prevTime = now;
+
+      let dt = now - prevTime;
+      if (dt > 500) dt = 0;
+      prevTime = now;
+
+      acc += dt;
+
+      if (acc >= STEP_MS) {
+        acc -= STEP_MS;
+        if (!playerMode) simulateAI();
+      }
+
+      drawAll();
+      requestAnimationFrame(step);
+    }
+
+    // ---- Overlay / controles
+    let ctrlOverrideUntil=0;
+    const forceShowCtrl=(ms=4000)=>{
+      ctrlOverrideUntil=performance.now()+ms;
+      ctrlBtn.classList.remove('hidden','opacity-0','translate-y-2');
+    };
+
+    const updateCtrlVisibility=()=>{
+      if(overlayVisible()){
+        ctrlBtn.classList.add('hidden','opacity-0','translate-y-2');
+        return;
+      }
+      if(performance.now()<ctrlOverrideUntil){
+        ctrlBtn.classList.remove('hidden','opacity-0','translate-y-2');
+        return;
+      }
+      const max=(document.documentElement.scrollHeight-window.innerHeight);
+      if(max<=0){
+        ctrlBtn.classList.remove('hidden','opacity-0','translate-y-2');
+        return;
+      }
+      const p=window.scrollY/max;
+      const show=p>0.72;
+      if(show){
+        ctrlBtn.classList.remove('hidden');
+        requestAnimationFrame(()=>ctrlBtn.classList.remove('opacity-0','translate-y-2'));
+      }else{
+        ctrlBtn.classList.add('opacity-0','translate-y-2');
+        setTimeout(()=>{ if(ctrlBtn.classList.contains('opacity-0')) ctrlBtn.classList.add('hidden'); }, 300);
+      }
+    };
+
+    function openOverlay() {
+      overlay.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+      document.body.classList.add("msweep-open");
+      ctrlBtn.classList.add("opacity-0", "translate-y-2", "hidden");
+      requestAnimationFrame(() => {
+        overlay.classList.remove("opacity-0");
+        resizeAll();
+        resizePlayCanvas();
+        drawAll();
+        overlay.setAttribute("aria-modal", "true");
+        (takeoverBtn ?? exitBtn)?.focus();
+      });
+      playerMode = false;
+      STEP_MS = SPEED_AI;
+      overlay.classList.remove("player-mode");
+      layer.classList.add("msweep-play");
+      pageShell?.classList.add("page-hidden");
+      pageShell?.setAttribute("inert", "");
+      hidePage();
+      drawAll();
+    }
+
+    function takeControl() {
+      playerMode = true;
+      STEP_MS = Infinity;
+      overlay.classList.add("player-mode");
+      exitBtn?.focus();
+    }
+
+    function closeOverlay() {
+      overlay.classList.add("opacity-0");
+      setTimeout(() => overlay.classList.add("hidden"), 300);
+      document.body.style.overflow = "";
+      document.body.classList.remove("msweep-open");
+      playerMode = false;
+      overlay.classList.remove("player-mode");
+      ctrlBtn.setAttribute("aria-pressed", "false");
+      layer.classList.remove("msweep-play");
+      pageShell?.classList.remove("page-hidden");
+      pageShell?.removeAttribute("inert");
+      showPage();
+      drawAll();
+      ctrlBtn?.focus();
+      forceShowCtrl(5000);
+      updateCtrlVisibility();
+    }
+
+    // ---- Input jugador
+    let hoverCell = null;
+
+    const pickCellFromEvent = (ev) => {
+      const rect = playCanvas.getBoundingClientRect();
+      const cx = ev.clientX - rect.left;
+      const cy = ev.clientY - rect.top;
+      const cr = Math.floor(cy / CELL), cc = Math.floor(cx / CELL);
+      if (cr >= 0 && cr < rows && cc >= 0 && cc < cols) return {cr,cc};
+      return null;
+    };
+
+    playCanvas.addEventListener("mousemove", (ev) => {
+      if (!playerMode || gameOver) return;
+      const pos = pickCellFromEvent(ev);
+      hoverCell = pos ? {r:pos.cr,c:pos.cc} : null;
+      drawAll(hoverCell);
+    });
+
+    playCanvas.addEventListener("mouseleave", () => {
+      hoverCell = null;
+      if (overlayVisible()) drawAll();
+    });
+
+    playCanvas.addEventListener("click", (ev) => {
+      const pos = pickCellFromEvent(ev);
+      if (!pos) return;
+
+      if (gameOver) {
+        newGame();
+        return;
+      }
+
+      if (!playerMode) return;
+      const {cr,cc} = pos;
+      const cell = board[cr][cc];
+
+      if (cell.revealed && cell.value>0) {
+        chord(cr,cc);
+      } else {
+        revealCell(cr, cc);
+      }
+      drawAll(hoverCell);
+    });
+
+    playCanvas.addEventListener("contextmenu", (ev) => {
+      if (!playerMode || gameOver) return;
+      ev.preventDefault();
+      const pos = pickCellFromEvent(ev);
+      if (!pos) return;
+      toggleFlag(pos.cr, pos.cc);
+      drawAll(hoverCell);
+    });
+
+    // ---- Eventos globales
+    window.addEventListener("resize", () => {
+      resizeAll();
+      if (overlayVisible()) resizePlayCanvas();
+      drawAll(hoverCell);
+      updateCtrlVisibility();
+    });
+    window.addEventListener("orientationchange", () => {
+      if (overlayVisible()) resizePlayCanvas();
+      drawAll(hoverCell);
+    });
+    window.addEventListener("visibilitychange", () => {
+      running = !document.hidden;
+      prevTime = 0;
+      acc = 0;
+      if (running && !reduce) requestAnimationFrame(step);
+    });
+    window.addEventListener('scroll', () => {
+      ctrlOverrideUntil=0; updateCtrlVisibility();
+    }, { passive:true });
+
+    // Joystick móvil
+    let joyActive=false;
+    let joyCenter={ x:0, y:0 };
+    const BASE_R=56, STICK_R=28, DEAD=10;
+
+    const moveStickTo=(dx,dy)=>{
+      const dist=Math.min(BASE_R-STICK_R, Math.hypot(dx,dy));
+      const ang=Math.atan2(dy,dx);
+      const x=Math.cos(ang)*dist;
+      const y=Math.sin(ang)*dist;
+      joyStick && (joyStick.style.transform=`translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`);
+    };
+    const resetStick=()=>{ if(joyStick) joyStick.style.transform='translate(-50%, -50%)'; };
+
+    const joyTouchStart=(ev)=>{
+      if(!playerMode) return;
+      joyActive=true;
+      const t=ev.touches[0];
+      const rect=document.getElementById('joy-base').getBoundingClientRect();
+      joyCenter.x=rect.left+rect.width/2;
+      joyCenter.y=rect.top+rect.height/2;
+      const dx=t.clientX-joyCenter.x, dy=t.clientY-joyCenter.y;
+      moveStickTo(dx,dy);
+      ev.preventDefault();
+    };
+    const joyTouchMove=(ev)=>{
+      if(!joyActive) return;
+      const t=ev.touches[0];
+      const dx=t.clientX-joyCenter.x, dy=t.clientY-joyCenter.y;
+      moveStickTo(dx,dy);
+      ev.preventDefault();
+    };
+    const joyTouchEnd=()=>{ joyActive=false; resetStick(); };
+
+    if(joyBase && joyStick){
+      joyBase.addEventListener('touchstart', joyTouchStart, { passive:false });
+      window.addEventListener('touchmove',  joyTouchMove,   { passive:false });
+      window.addEventListener('touchend',   joyTouchEnd,    { passive:true  });
+      window.addEventListener('touchcancel',joyTouchEnd,    { passive:true  });
+    }
+
+    // ---- Wireup
+    ctrlBtn.addEventListener("click", openOverlay);
+    exitBtn.addEventListener("click", closeOverlay);
+    takeoverBtn?.addEventListener("click", takeControl);
+
+    // ---- Init
+    resizeAll();
+    initBoard();
+    drawAll();
+    prevTime = 0;
+    acc = 0;
+    if (!reduce) requestAnimationFrame(step);
+    updateCtrlVisibility();
+  });
+</script>
