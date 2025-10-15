@@ -60,7 +60,7 @@ export const DICTS = {
           role: "Virtualization and Network Integration",
           place: "University of Zaragoza",
           date: "February 2025 - April 2025",
-          desc: "Conducted the design and implementation of a <b>virtual machine server</b> seamlessly integrated with the <b>network architecture</b> of the <b>Department of Computer Science and Systems Engineering</b>. This involved an in-depth analysis of <b>OpenStack</b> as a virtualization management tool, its <b>installation and configuration</b> on a dedicated server, and the setup of <b>network segmentation</b> and <b>virtualization</b> for both the server and its virtual machines. Additionally, comprehensive <b>documentation</b> was prepared to detail the entire process and its outcomes."
+          desc: "Conducted the design and implementation of a <b>virtual machine server</b> seamlessly integrated with the <b>network architecture</b> of the <b>Department of Computer Science and Systems Engineering</b>. This involved an in-depth analysis of <b>OpenStack</b> as a virtualization management tool, its <b>installation and configuration using Kolla Ansible</b> on a dedicated server, and the setup of <b>network segmentation</b> and <b>virtualization</b> for both the server and its virtual machines. Additionally, comprehensive <b>documentation</b> was prepared to detail the entire process and its outcomes."
         }
       ]
     },
@@ -163,7 +163,7 @@ export const DICTS = {
           role: "Virtualización e Integración de Redes",
           place: "Universidad de Zaragoza",
           date: "Febrero 2025 - Abril 2025",
-          desc: "Realización del diseño e implementación de un <b>servidor de máquinas virtuales</b> integrado con la <b>arquitectura de red</b> del <b>Departamento de Informática e Ingeniería de Sistemas</b>. Esto implicó un análisis en profundidad de <b>OpenStack</b> como herramienta de gestión de virtualización, su <b>instalación y configuración</b> en un servidor dedicado y la configuración de <b>segmentación de red</b> y <b>virtualización</b> tanto para el servidor como para sus máquinas virtuales. Además, se preparó una <b>documentación</b> completa para detallar todo el proceso y sus resultados."
+          desc: "Realización del diseño e implementación de un <b>servidor de máquinas virtuales</b> integrado con la <b>arquitectura de red</b> del <b>Departamento de Informática e Ingeniería de Sistemas</b>. Esto implicó un análisis en profundidad de <b>OpenStack</b> como herramienta de gestión de virtualización, su <b>instalación y configuración usando Kolla-Ansible</b> en un servidor dedicado y la configuración de <b>segmentación de red</b> y <b>virtualización</b> tanto para el servidor como para sus máquinas virtuales. Además, se preparó una <b>documentación</b> completa para detallar todo el proceso y sus resultados."
         }
       ]    
     },

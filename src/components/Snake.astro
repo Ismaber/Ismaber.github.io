@@ -3,24 +3,31 @@ import { GameCtrlFab, GameExitFab, GameTakeoverFab } from './GameFabs';
 
 // Props opcionales (IDs personalizables)
 type Props = {
-  pageShellId?: string;       // contenedor “principal” (se oculta al jugar)
+  pageShellId?: string;       // contenedor "principal" (se oculta al jugar)
   backgroundRootId?: string;  // fondo para quitar máscara durante el juego
 };
-const { pageShellId = 'page-shell', backgroundRootId = 'background-root' } = Astro.props as Props;
+
+// Defaults si no llegan por Astro.props
+const {
+  pageShellId = 'page-shell',
+  backgroundRootId = 'background-root',
+} = Astro.props as Props;
 ---
 
 <!-- Capa de snake (fondo + IA) -->
 <div
   id="snake-layer"
-  class="pointer-events-none fixed inset-0 z-[-5] opacity-40 dark:opacity-40
-         [mask-image:radial-gradient(900px_700px_at_50%_35%,_#000_55%,_transparent_100%)]"
+  class="
+    pointer-events-none fixed inset-0 z-[-5] opacity-40 dark:opacity-40
+    [mask-image:radial-gradient(900px_700px_at_50%_35%,_#000_55%,_transparent_100%)]
+  "
   aria-hidden="true"
 >
   <canvas id="snake-bg" class="w-full h-full"></canvas>
 </div>
 
-<!-- Botón easter egg -->
-<GameCtrlFab game="snake"/>
+<!-- Botón easter egg (control para abrir el overlay del juego) -->
+<GameCtrlFab game="snake" />
 
 <!-- Overlay a pantalla completa (dialog accesible) -->
 <div
@@ -30,41 +37,44 @@ const { pageShellId = 'page-shell', backgroundRootId = 'background-root' } = Ast
   aria-modal="true"
   tabindex="-1"
 >
+  <!-- Lienzo de juego en primer plano -->
   <canvas id="snake-play" class="w-full h-full block"></canvas>
 
   <!-- Leyenda translúcida (se oculta en móviles) -->
   <div
     id="snake-hint"
-    class="pointer-events-none absolute left-1/2 -translate-x-1/2 top-4
-           text-xs sm:text-sm px-3 py-1.5 rounded-full
-           bg-white/60 text-slate-900 ring-1 ring-black/10 backdrop-blur
-           dark:bg-slate-900/60 dark:text-white dark:ring-white/10"
+    class="
+      pointer-events-none absolute left-1/2 -translate-x-1/2 top-4
+      text-xs sm:text-sm px-3 py-1.5 rounded-full
+      bg-white/60 text-slate-900 ring-1 ring-black/10 backdrop-blur
+      dark:bg-slate-900/60 dark:text-white dark:ring-white/10
+    "
   >
     Usa ← ↑ → ↓ o WASD para moverte
   </div>
 
-  <!-- Controles -->
-  <GameExitFab game="snake"/>
+  <!-- Controles del overlay -->
+  <GameExitFab game="snake" />
   <GameTakeoverFab game="snake" />
 
   <!-- Joystick móvil (sólo en punteros "coarse" y MODO JUGADOR) -->
-  <div
-    id="snake-joy"
-    class="fixed bottom-6 left-6 select-none"
-    aria-hidden="true"
-  >
+  <div id="snake-joy" class="fixed bottom-6 left-6 select-none" aria-hidden="true">
     <div
       id="joy-base"
-      class="relative w-28 h-28 rounded-full
-             bg-slate-900/25 ring-1 ring-black/20 backdrop-blur
-             dark:bg-white/15 dark:ring-white/10"
+      class="
+        relative w-28 h-28 rounded-full
+        bg-slate-900/25 ring-1 ring-black/20 backdrop-blur
+        dark:bg-white/15 dark:ring-white/10
+      "
     >
       <div
         id="joy-stick"
-        class="absolute left-1/2 top-1/2 -translate-y-0 translate-x-0
-               w-14 h-14 rounded-full
-               bg-white/80 ring-1 ring-black/10 shadow
-               dark:bg-slate-800/80 dark:ring-white/10"
+        class="
+          absolute left-1/2 top-1/2 -translate-y-0 translate-x-0
+          w-14 h-14 rounded-full
+          bg-white/80 ring-1 ring-black/10 shadow
+          dark:bg-slate-800/80 dark:ring-white/10
+        "
       ></div>
     </div>
   </div>
@@ -72,292 +82,684 @@ const { pageShellId = 'page-shell', backgroundRootId = 'background-root' } = Ast
 
 <style is:global>
 /* --- Estados controlados por CSS --- */
+
 /* Overlay abierto: oculta el botón flotante principal */
 body.snake-open #snake-ctrl { display: none !important; }
 
 /* Modo jugador: oculta el botón "Tomar el control" */
 #snake-overlay.player-mode #snake-takeover { display: none !important; }
 
-/* Joystick: SIEMPRE oculto por defecto */
+/* Joystick: SIEMPRE oculto por defecto (se muestra por media-query abajo) */
 #snake-joy { display: none !important; }
 
 /* Sólo en dispositivos táctiles (puntero "coarse") y en modo jugador */
 @media (pointer: coarse) {
-  #snake-overlay.player-mode #snake-joy { display: block !important; pointer-events: auto !important; }
-  /* Ocultar la leyenda en móviles */
+  #snake-overlay.player-mode #snake-joy {
+    display: block !important;
+    pointer-events: auto !important;
+  }
+  /* Ocultar la leyenda en móviles para no tapar */
   #snake-hint { display: none !important; }
 }
 
-/* Sólo estilos del snake */
-.snake-play { -webkit-mask-image:none!important; mask-image:none!important; opacity:.9!important; }
+/* Sólo estilos del snake en modo play (quita máscaras globales) */
+.snake-play {
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  opacity: .9 !important;
+}
+
+/* Ocultar/inhabilitar resto de la página al abrir el overlay */
 .page-hidden {
-  opacity:0!important; visibility:hidden!important; pointer-events:none!important; user-select:none!important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  user-select: none !important;
   transition: opacity .25s ease;
 }
 
-/* Reduce motion: desactiva el bucle si el usuario lo pide */
+/* Reduce motion: desactiva animaciones si el usuario lo pide */
 @media (prefers-reduced-motion: reduce) {
-  #snake-layer, #snake-overlay { animation: none !important; }
+  #snake-layer,
+  #snake-overlay {
+    animation: none !important;
+  }
 }
 </style>
 
 <script is:inline>
-  window.addEventListener('DOMContentLoaded', () => {
-    // --- Props recibidas desde Astro (sin evals raros)
+  // Toda la lógica de inicialización se encapsula para poder "arrancarla" tarde
+  const init = () => {
+    // --- Props recibidas desde Astro (con defaults por seguridad)
     const pageShellId = (Astro.props?.pageShellId ?? 'page-shell');
     const backgroundRootId = (Astro.props?.backgroundRootId ?? 'background-root');
 
-    // --- Refs DOM
-    const bgCanvas   = document.getElementById('snake-bg');
-    const playCanvas = document.getElementById('snake-play');
-    const layer      = document.getElementById('snake-layer');
-    const ctrlBtn    = document.getElementById('snake-ctrl');
-    const overlay    = document.getElementById('snake-overlay');
-    const exitBtn    = document.getElementById('snake-exit');
-    const takeoverBtn= document.getElementById('snake-takeover');
-    const pageShell  = document.getElementById(pageShellId);
-    const bgRoot     = document.getElementById(backgroundRootId);
-    // joystick
+    // --- Refs DOM (elementos imprescindibles del juego/overlay)
+    const bgCanvas    = document.getElementById('snake-bg');
+    const playCanvas  = document.getElementById('snake-play');
+    const layer       = document.getElementById('snake-layer');
+    const ctrlBtn     = document.getElementById('snake-ctrl');
+    const overlay     = document.getElementById('snake-overlay');
+    const exitBtn     = document.getElementById('snake-exit');
+    const takeoverBtn = document.getElementById('snake-takeover');
+    const pageShell   = document.getElementById(pageShellId);
+
+    // Refs joystick (móvil)
     const joyBase  = document.getElementById('joy-base');
     const joyStick = document.getElementById('joy-stick');
 
+    // Si falta algo crítico, abortar silenciosamente
     if (!bgCanvas || !layer || !ctrlBtn || !overlay || !exitBtn || !playCanvas) return;
 
-    // --- Accesibilidad / motion
+    // --- Accesibilidad / motion (respeta prefers-reduced-motion)
     const mqReduce = window.matchMedia('(prefers-reduced-motion: reduce)');
     let reduce = mqReduce.matches;
     mqReduce.addEventListener?.('change', e => { reduce = e.matches; });
 
-    // --- Helpers ocultar página
-    const keepIds = new Set(['snake-overlay','snake-ctrl','snake-layer', backgroundRootId]);
+    // --- Helpers para ocultar el resto de la página bajo el overlay
+    const keepIds = new Set(['snake-overlay', 'snake-ctrl', 'snake-layer', backgroundRootId]);
+
     const hidePage = () => {
       for (const el of Array.from(document.body.children)) {
-        if (!keepIds.has(el.id)) { el.classList.add('page-hidden'); el.setAttribute('inert',''); }
+        if (!keepIds.has(el.id)) {
+          el.classList.add('page-hidden');
+          el.setAttribute('inert', '');
+        }
       }
     };
+
     const showPage = () => {
       for (const el of Array.from(document.body.children)) {
-        if (!keepIds.has(el.id)) { el.classList.remove('page-hidden'); el.removeAttribute('inert'); }
+        if (!keepIds.has(el.id)) {
+          el.classList.remove('page-hidden');
+          el.removeAttribute('inert');
+        }
       }
     };
 
-    // --- Contextos
-    const bgCtx   = bgCanvas.getContext('2d', { alpha: true });
+    // --- Contextos 2D (con alpha)
+    const bgCtx   = bgCanvas.getContext('2d',  { alpha: true });
     const playCtx = playCanvas.getContext('2d', { alpha: true });
 
-    // --- Tema/colores
+    // --- Tema/colores dinámicos (lee CSS vars y dark mode)
     const mqDark = window.matchMedia('(prefers-color-scheme: dark)');
-    const cssVar = (n,f='') => getComputedStyle(document.documentElement).getPropertyValue(n).trim() || f;
+    const cssVar = (n, f = '') =>
+      getComputedStyle(document.documentElement).getPropertyValue(n).trim() || f;
+
     const theme = () => {
-      const primary = cssVar('--heroui-primary-400','222 47% 50%');
-      const secondary = cssVar('--heroui-secondary-400','280 60% 55%');
-      const isDark = document.documentElement.classList.contains('dark') || mqDark.matches;
+      const primary   = cssVar('--heroui-primary-400',   '222 47% 50%');
+      const secondary = cssVar('--heroui-secondary-400', '280 60% 55%');
+      const isDark =
+        document.documentElement.classList.contains('dark') || mqDark.matches;
+
       return {
         isDark,
         snake: isDark ? `hsl(${primary})`   : 'rgba(2,6,23,1)',
-        food : isDark ? `hsl(${secondary})` : 'rgba(2,6,23,1)'
+        food : isDark ? `hsl(${secondary})` : 'rgba(2,6,23,1)',
       };
     };
+
+    // Redibuja al cambiar tema/scheme sin relanzar el juego
     mqDark.addEventListener?.('change', () => drawAll());
     new MutationObserver(() => drawAll())
-      .observe(document.documentElement, { attributes:true, attributeFilter:['class'] });
+      .observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
-    // --- Tamaños / constantes
-    const DPR   = Math.max(1, Math.floor(window.devicePixelRatio || 1));
-    const CELL  = 22;
-    let cols=0, rows=0, Wb=0, Hb=0;
+    // --- Tamaños / constantes de rejilla
+    const DPR  = Math.max(1, Math.floor(window.devicePixelRatio || 1)); // pixel ratio "entero"
+    const CELL = 24;                                                    // tamaño de celda en px
+    let cols = 0, rows = 0, Wb = 0, Hb = 0;
 
+    // Ajusta dimensiones físicas del canvas al tamaño CSS * DPR
     const sizeCanvas = (canvas) => {
-      const w = canvas.clientWidth, h = canvas.clientHeight;
-      canvas.width = w * DPR; canvas.height = h * DPR;
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      canvas.width  = w * DPR;
+      canvas.height = h * DPR;
       return { w, h };
     };
+
+    // PlayCanvas necesita su propio setTransform (escala a DPR)
     const resizePlayCanvas = () => {
       playCanvas.width  = bgCanvas.clientWidth  * DPR;
       playCanvas.height = bgCanvas.clientHeight * DPR;
       playCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
     };
+
+    // Recalcula rejilla y redibuja si cambia cols/rows
     const resizeAll = () => {
-      const {w,h} = sizeCanvas(bgCanvas);
-      Wb=w; Hb=h;
-      bgCtx.setTransform(DPR,0,0,DPR,0,0);
+      const { w, h } = sizeCanvas(bgCanvas);
+      Wb = w; Hb = h;
+      bgCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+      const prevCols = cols;
+      const prevRows = rows;
+
       cols = Math.max(10, Math.floor(Wb / CELL));
       rows = Math.max( 8, Math.floor(Hb / CELL));
+
+      // Si cambia la rejilla, reconstruir ocupaciones
+      if ((prevCols !== cols || prevRows !== rows) && grid) rebuildGrid();
+
       if (overlayVisible()) resizePlayCanvas();
     };
 
-    // --- Estado juego
-    let snake = [];
-    let occSet = new Set();
-    let dir = {x:1,y:0};
-    let food = null;
-    let running = true;
-    let playerMode = false;
-    const SPEED_AI     = 10;
-    const SPEED_PLAYER = 200;
+    // --- Rejilla de ocupación (Uint8Array) para colisiones O(1)
+    let grid = null; // Uint8Array de cols * rows
+
+    const idx      = (x, y) => y * cols + x;
+    const inBounds = (p)    => p.x >= 0 && p.x < cols && p.y >= 0 && p.y < rows;
+    const occAt    = (x, y) => grid[idx(x, y)] | 0;
+    const setOcc   = (x, y, v) => { grid[idx(x, y)] = v ? 1 : 0; };
+
+    // --- Estado del juego
+    let snake = [];                 // lista de segmentos (head = [0])
+    let dir   = { x: 1, y: 0 };     // dirección actual
+    let food  = null;               // posición de la comida
+    let running    = true;          // loop activo/pausado por visibilidad
+    let playerMode = false;         // IA (false) o jugador (true)
+
+    // Tiempos por tick (IA vs jugador). Ojo: IA demasiado rápida ⇒ muchos ticks
+    const SPEED_AI     = 100;  // ms por tick IA (~10 FPS de lógica; con multi-ticks)
+    const SPEED_PLAYER = 200;  // ms por tick jugador
     let STEP_MS = SPEED_AI;
 
-    // Cola anti-doble-giro
-    let nextDir = {x:1,y:0};
-    let turnQueued = false;
+    // Cola anti-doble-giro (evita invertir 180º en un mismo tick)
+    let nextDir     = { x: 1, y: 0 };
+    let turnQueued  = false;
 
-    // Timestep fijo (acumulador)
-    let acc = 0;
+    // Timestep fijo con acumulador
+    let acc      = 0;
     let prevTime = 0;
-    const MAX_STEPS_PER_FRAME = 3; // evita "espiral de la muerte"
+    const MAX_STEPS_PER_FRAME = 4; // límite de seguridad por frame
 
-    const key = p => `${p.x},${p.y}`;
-    const inBounds = p => p.x>=0 && p.x<cols && p.y>=0 && p.y<rows;
-    const occ = p => occSet.has(key(p));
-    const rnd = () => ({ x: (Math.random()*cols)|0, y: (Math.random()*rows)|0 });
+    // RNG simple para colocar comida
+    const rnd = () => ({ x: (Math.random() * cols) | 0, y: (Math.random() * rows) | 0 });
+
+    // === A* helpers ===
+    const manhattan = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+
+    // Min-heap minimal para OPEN set del A*
+    class MinHeap {
+      constructor() { this.a = []; }
+      push(n) { this.a.push(n); this.up(this.a.length - 1); }
+      pop() {
+        if (!this.a.length) return null;
+        const top = this.a[0];
+        const end = this.a.pop();
+        if (this.a.length) { this.a[0] = end; this.down(0); }
+        return top;
+      }
+      empty() { return this.a.length === 0; }
+      up(i) {
+        const a = this.a;
+        while (i > 0) {
+          const p = (i - 1) >> 1;
+          if (a[p].f <= a[i].f) break;
+          const t = a[p]; a[p] = a[i]; a[i] = t; i = p;
+        }
+      }
+      down(i) {
+        const a = this.a, n = a.length;
+        for (;;) {
+          let l = i * 2 + 1, r = l + 1, m = i;
+          if (l < n && a[l].f < a[m].f) m = l;
+          if (r < n && a[r].f < a[m].f) m = r;
+          if (m === i) break;
+          const t = a[m]; a[m] = a[i]; a[i] = t; i = m;
+        }
+      }
+    }
+
+    // --- Inicialización / grid
+    const rebuildGrid = () => {
+      grid = new Uint8Array(cols * rows);
+      for (const s of snake) if (inBounds(s)) setOcc(s.x, s.y, 1);
+      if (food && !inBounds(food)) food = null; // invalida comida si sale de bounds
+    };
 
     const placeFood = () => {
-      if (occSet.size >= cols*rows) return (food=null);
-      let p; do { p = rnd(); } while (occ(p));
+      if (!grid) return;
+      if (snake.length >= cols * rows) { food = null; return; } // lleno: no hay comida
+      let p;
+      do { p = rnd(); } while (occAt(p.x, p.y));
       food = p;
     };
 
     const resetSnake = () => {
-      const start = { x: (cols/3)|0, y: (rows/2)|0 };
-      snake = [start, {x:start.x-1,y:start.y}, {x:start.x-2,y:start.y}];
-      occSet.clear();
-      for (const s of snake) occSet.add(key(s));
-      dir = {x:1,y:0};
+      const start = { x: (cols / 3) | 0, y: (rows / 2) | 0 };
+      snake = [start, { x: start.x - 1, y: start.y }, { x: start.x - 2, y: start.y }];
+      rebuildGrid();
+      dir = { x: 1, y: 0 };
       nextDir = dir; turnQueued = false;
       placeFood();
     };
 
-    // --- IA (BFS)
+    // === IA (A*) robusta ===
     const findPath = (start, goal) => {
       if (!goal) return null;
-      const body = new Set(occSet);
-      const tailKey = key(snake[snake.length-1]);
-      body.delete(tailKey);
-      const q = new Array(cols*rows);
-      let qs=0, qe=0; const push=v=>{q[qe++]=v}, shift=()=>q[qs++];
-      push(start);
-      const prev=new Map(), seen=new Set([key(start)]);
-      while(qs<qe){
-        const cur=shift();
-        if(cur.x===goal.x&&cur.y===goal.y){
-          const path=[]; let c=cur;
-          while(prev.has(key(c))) { path.push(c); c=prev.get(key(c)); }
-          path.reverse(); return path;
+
+      // Snapshot de ocupación (copia barata)
+      const body = new Uint8Array(grid);
+      const tail = snake[snake.length - 1];
+      const tailIndex = idx(tail.x, tail.y);
+
+      // Permite pasar por la cola si en el PRIMER paso no se come (la cola se mueve)
+      const wouldEatFirstStep = manhattan(start, goal) === 1;
+      if (!wouldEatFirstStep) body[tailIndex] = 0;
+
+      // Estructuras planas (rápidas)
+      const OPEN  = new MinHeap();
+      const seen  = new Uint8Array(cols * rows);
+      const g     = new Float32Array(cols * rows); g.fill(1e9);
+      const prevX = new Int16Array(cols * rows);  prevX.fill(-1);
+      const prevY = new Int16Array(cols * rows);  prevY.fill(-1);
+
+      const sIdx = idx(start.x, start.y);
+      g[sIdx] = 0;
+      OPEN.push({ x: start.x, y: start.y, f: manhattan(start, goal) });
+
+      // Penaliza ligerísimamente los giros para favorecer trayectorias rectas
+      const straightPenalty = (fromX, fromY, toX, toY) => {
+        const vx = toX - fromX, vy = toY - fromY;
+        return (vx === dir.x && vy === dir.y) ? 0 : 1e-3;
+      };
+
+      while (!OPEN.empty()) {
+        const cur = OPEN.pop();
+        const ci = idx(cur.x, cur.y);
+        if (seen[ci]) continue;
+        seen[ci] = 1;
+
+        // Objetivo alcanzado → reconstruye el path hacia atrás
+        if (cur.x === goal.x && cur.y === goal.y) {
+          const path = [];
+          let px = cur.x, py = cur.y;
+          while (!(px === start.x && py === start.y)) {
+            path.push({ x: px, y: py });
+            const i = idx(px, py);
+            const nx = prevX[i], ny = prevY[i];
+            px = nx; py = ny;
+          }
+          path.reverse();
+          return path;
         }
-        for(const nb of[{x:cur.x+1,y:cur.y},{x:cur.x-1,y:cur.y},{x:cur.x,y:cur.y+1},{x:cur.x,y:cur.y-1}]){
-          const k=key(nb);
-          if(!inBounds(nb)||seen.has(k)||body.has(k)) continue;
-          seen.add(k); prev.set(k,cur); push(nb);
+
+        // Vecinos en 4 direcciones
+        const nbs = [
+          [cur.x + 1, cur.y],
+          [cur.x - 1, cur.y],
+          [cur.x, cur.y + 1],
+          [cur.x, cur.y - 1],
+        ];
+
+        for (let k = 0; k < 4; k++) {
+          const nx = nbs[k][0], ny = nbs[k][1];
+          if (nx < 0 || nx >= cols || ny < 0 || ny >= rows) continue;
+          const ni = idx(nx, ny);
+          if (seen[ni] || body[ni]) continue;
+
+          const tentative = g[ci] + 1 + straightPenalty(cur.x, cur.y, nx, ny);
+          if (tentative < g[ni]) {
+            g[ni] = tentative;
+            prevX[ni] = cur.x; prevY[ni] = cur.y;
+            const f = tentative + manhattan({ x: nx, y: ny }, goal);
+            OPEN.push({ x: nx, y: ny, f });
+          }
         }
       }
       return null;
     };
 
-    const safeDirs = (head) => {
-      const opts = [{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}];
-      // prioriza seguir recto
-      opts.sort((a,b)=>((a.x===dir.x&&a.y===dir.y)?-1:0)-((b.x===dir.x&&b.y===dir.y)?-1:0));
-      const cands=[];
-      for(const d of opts){
-        const n={x:head.x+d.x, y:head.y+d.y};
-        if(inBounds(n)&&!occ(n)) cands.push(d);
+    // --- Dibujo (rounded rects + alpha según tema)
+    const roundRect = (ctx, x, y, w, h, r) => {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+    };
+
+    const render = (ctx) => {
+      const { isDark, snake: cSnake, food: cFood } = theme();
+      const segA  = isDark ? 0.30 : 0.24;
+      const headA = Math.min(1, segA + 0.10);
+
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+      // Cuerpo
+      ctx.fillStyle = cSnake;
+      ctx.globalAlpha = segA;
+      for (let i = snake.length - 1; i >= 0; i--) {
+        const s = snake[i];
+        roundRect(ctx, s.x * CELL + 3, s.y * CELL + 3, CELL - 6, CELL - 6, 5);
+        ctx.fill();
       }
-      if(food){
-        cands.sort((d1,d2)=>{
-          const n1={x:head.x+d1.x,y:head.y+d1.y}, n2={x:head.x+d2.x,y:head.y+d2.y};
-          return (Math.abs(n1.x-food.x)+Math.abs(n1.y-food.y))-(Math.abs(n2.x-food.x)+Math.abs(n2.y-food.y));
+
+      // Cabeza
+      if (snake[0]) {
+        const s = snake[0];
+        ctx.globalAlpha = headA;
+        roundRect(ctx, s.x * CELL + 2, s.y * CELL + 2, CELL - 4, CELL - 4, 6);
+        ctx.fill();
+      }
+
+      // Comida
+      if (food) {
+        ctx.fillStyle = cFood;
+        ctx.globalAlpha = isDark ? 0.40 : 0.30;
+        roundRect(ctx, food.x * CELL + 6, food.y * CELL + 6, CELL - 12, CELL - 12, 4);
+        ctx.fill();
+      }
+
+      ctx.globalAlpha = 1;
+    };
+
+    const drawAll = () => {
+      render(bgCtx);
+      if (overlayVisible()) render(playCtx);
+    };
+
+    // --- Overlay / input
+    const overlayVisible = () => !overlay.classList.contains('hidden');
+
+    // Fix: botón visible al cerrar sin scroll (override temporal)
+    let ctrlOverrideUntil = 0;
+    const forceShowCtrl = (ms = 4000) => {
+      ctrlOverrideUntil = performance.now() + ms;
+      ctrlBtn.classList.remove('hidden', 'opacity-0', 'translate-y-2');
+    };
+
+    const openOverlay = () => {
+      overlay.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      document.body.classList.add('snake-open');
+      ctrlBtn.classList.add('opacity-0', 'translate-y-2', 'hidden');
+
+      requestAnimationFrame(() => {
+        overlay.classList.remove('opacity-0');
+        resizeAll();               // asegura rejilla antes de jugar
+        resizePlayCanvas();        // alinea DPR
+        render(playCtx);           // primer frame inmediato
+        overlay.setAttribute('aria-modal', 'true');
+        (takeoverBtn ?? exitBtn)?.focus();
+      });
+
+      // Estado por defecto: IA
+      playerMode = false; STEP_MS = SPEED_AI;
+      nextDir = dir; turnQueued = false;
+
+      overlay.classList.remove('player-mode');
+      layer.classList.add('snake-play');
+
+      // Oculta/inhabilita shell y resto de la página
+      pageShell?.classList.add('page-hidden');
+      pageShell?.setAttribute('inert', '');
+      hidePage();
+
+      drawAll();
+    };
+
+    const takeControl = () => {
+      playerMode = true; STEP_MS = SPEED_PLAYER;
+      nextDir = dir; turnQueued = false;
+      overlay.classList.add('player-mode');
+      exitBtn?.focus();
+    };
+
+    const closeOverlay = () => {
+      overlay.classList.add('opacity-0');
+      setTimeout(() => overlay.classList.add('hidden'), 300);
+
+      document.body.style.overflow = '';
+      document.body.classList.remove('snake-open');
+
+      playerMode = false; STEP_MS = SPEED_AI;
+      overlay.classList.remove('player-mode');
+
+      ctrlBtn.setAttribute('aria-pressed', 'false');
+      layer.classList.remove('snake-play');
+
+      pageShell?.classList.remove('page-hidden');
+      pageShell?.removeAttribute('inert');
+      showPage();
+
+      drawAll();
+      ctrlBtn?.focus();
+
+      // Tras cerrar, fuerza mostrar el FAB un rato
+      forceShowCtrl(5000);
+      updateCtrlVisibility();
+    };
+
+    // === Helper comparación de direcciones
+    const sameDir = (a, b) => a && b && a.x === b.x && a.y === b.y;
+
+    // --- Teclado (sólo en modo jugador)
+    const onKey = (e) => {
+      if (!playerMode) return;
+      if (e.repeat) return;
+
+      const k = e.key.toLowerCase();
+      let nd = null;
+
+      if      (k === 'arrowup'    || k === 'w') nd = { x: 0, y: -1 };
+      else if (k === 'arrowdown'  || k === 's') nd = { x: 0, y:  1 };
+      else if (k === 'arrowleft'  || k === 'a') nd = { x: -1, y: 0 };
+      else if (k === 'arrowright' || k === 'd') nd = { x: 1,  y: 0 };
+      else if (k === 'escape') { closeOverlay(); return; }
+
+      if (!nd) return;
+
+      // Evitar giro 180º si la serpiente tiene cuerpo
+      if (snake.length > 1 && (nd.x === -dir.x && nd.y === -dir.y)) return;
+
+      // Evitar colas de giros redundantes
+      if (sameDir(nd, dir) || sameDir(nd, nextDir)) return;
+
+      if (!turnQueued) {
+        nextDir = nd;
+        turnQueued = true;
+        e.preventDefault();
+      }
+    };
+
+    // --- Joystick táctil (vectores → direcciones)
+    let joyActive = false;
+    let joyCenter = { x: 0, y: 0 };
+    const BASE_R  = 56,   // radio base
+          STICK_R = 28,   // radio palanca
+          DEAD    = 10;   // zona muerta en px
+
+    const setDirFromVector = (dx, dy) => {
+      if (Math.hypot(dx, dy) < DEAD) return;
+
+      const ang = Math.atan2(dy, dx);
+      const deg = ang * 180 / Math.PI;
+
+      let nd = dir;
+      if      (deg > -45 && deg <=  45) nd = { x: 1,  y: 0 };
+      else if (deg >  45 && deg <= 135) nd = { x: 0,  y: 1 };
+      else if (deg <= -45 && deg > -135) nd = { x: 0,  y: -1 };
+      else                               nd = { x: -1, y: 0 };
+
+      // Reglas de giro idénticas al teclado
+      if (snake.length > 1 && (nd.x === -dir.x && nd.y === -dir.y)) return;
+      if (sameDir(nd, dir) || sameDir(nd, nextDir)) return;
+
+      if (!turnQueued) { nextDir = nd; turnQueued = true; }
+    };
+
+    const moveStickTo = (dx, dy) => {
+      const dist = Math.min(BASE_R - STICK_R, Math.hypot(dx, dy));
+      const ang  = Math.atan2(dy, dx);
+      const x    = Math.cos(ang) * dist;
+      const y    = Math.sin(ang) * dist;
+
+      joyStick?.style && (
+        joyStick.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`
+      );
+    };
+
+    const resetStick = () => {
+      joyStick?.style && (joyStick.style.transform = 'translate(-50%, -50%)');
+    };
+
+    const joyTouchStart = (ev) => {
+      if (!playerMode) return;
+      joyActive = true;
+
+      const t = ev.touches[0];
+      const rect = document.getElementById('joy-base').getBoundingClientRect();
+      joyCenter.x = rect.left + rect.width  / 2;
+      joyCenter.y = rect.top  + rect.height / 2;
+
+      const dx = t.clientX - joyCenter.x;
+      const dy = t.clientY - joyCenter.y;
+
+      moveStickTo(dx, dy);
+      setDirFromVector(dx, dy);
+      ev.preventDefault();
+    };
+
+    const joyTouchMove = (ev) => {
+      if (!joyActive) return;
+      const t = ev.touches[0];
+      const dx = t.clientX - joyCenter.x;
+      const dy = t.clientY - joyCenter.y;
+
+      moveStickTo(dx, dy);
+      setDirFromVector(dx, dy);
+      ev.preventDefault();
+    };
+
+    const joyTouchEnd = () => { joyActive = false; resetStick(); };
+
+    // Listeners táctiles (con passive adecuado por rendimiento)
+    if (joyBase && joyStick) {
+      joyBase.addEventListener('touchstart', joyTouchStart, { passive: false });
+      window.addEventListener('touchmove',   joyTouchMove,  { passive: false });
+      window.addEventListener('touchend',    joyTouchEnd,   { passive: true  });
+      window.addEventListener('touchcancel', joyTouchEnd,   { passive: true  });
+    }
+
+    // --- IA auxiliar "segura" si A* falla (elige direcciones válidas)
+    const safeDirs = (head) => {
+      const opts = [{ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }];
+
+      // Prioriza seguir recto
+      opts.sort((a, b) =>
+        ((a.x === dir.x && a.y === dir.y) ? -1 : 0) -
+        ((b.x === dir.x && b.y === dir.y) ? -1 : 0)
+      );
+
+      const cands = [];
+      for (const d of opts) {
+        const nx = head.x + d.x, ny = head.y + d.y;
+        if (nx >= 0 && nx < cols && ny >= 0 && ny < rows && !occAt(nx, ny)) {
+          cands.push(d);
+        }
+      }
+
+      // Pequeño sesgo hacia la comida si existe
+      if (food) {
+        cands.sort((d1, d2) => {
+          const n1 = { x: head.x + d1.x, y: head.y + d1.y };
+          const n2 = { x: head.x + d2.x, y: head.y + d2.y };
+          return (Math.abs(n1.x - food.x) + Math.abs(n1.y - food.y))
+               - (Math.abs(n2.x - food.x) + Math.abs(n2.y - food.y));
         });
       }
+
       return cands;
     };
 
-    // --- Dibujo
-    const roundRect=(ctx,x,y,w,h,r)=>{
-      ctx.beginPath();ctx.moveTo(x+r,y);
-      ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);
-      ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+    // --- Colisión 100% fiable con el cuerpo (sin sets ni "huecos fantasma")
+    const hitsBodyStrict = (nextHead, willEat) => {
+      // Si no comes, la cola se mueve y su celda queda libre
+      const tailMoves = !willEat;
+      const tail = snake[snake.length - 1];
+
+      // Compara con todos los segmentos, salvo la cola si se mueve
+      for (let i = 0; i < snake.length - (tailMoves ? 1 : 0); i++) {
+        const s = snake[i];
+        if (s.x === nextHead.x && s.y === nextHead.y) return true;
+      }
+      return false;
     };
 
-    const render=(ctx)=>{
-      const {isDark,snake:cSnake,food:cFood}=theme();
-      const segA=isDark?0.30:0.24, headA=Math.min(1,segA+0.10);
-      ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
-      ctx.fillStyle=cSnake; ctx.globalAlpha=segA;
-      for(let i=snake.length-1;i>=0;i--){
-        const s=snake[i]; roundRect(ctx,s.x*CELL+3,s.y*CELL+3,CELL-6,CELL-6,4); ctx.fill();
-      }
-      if(snake[0]){ const s=snake[0]; ctx.globalAlpha=headA;
-        roundRect(ctx,s.x*CELL+2,s.y*CELL+2,CELL-4,CELL-4,5); ctx.fill();
-      }
-      if(food){ ctx.fillStyle=cFood; ctx.globalAlpha=isDark?0.40:0.30;
-        roundRect(ctx,food.x*CELL+6,food.y*CELL+6,CELL-12,CELL-12,4); ctx.fill();
-      }
-      ctx.globalAlpha=1;
-    };
-
-    const drawAll=()=>{ render(bgCtx); if(overlayVisible()) render(playCtx); };
-
-    // --- Un paso de simulación (1 tick)
+    // --- Simulación de 1 tick (IA/jugador → avanza/come/colisiona)
     const simulateTick = () => {
-      const head=snake[0];
+      // Sanity: garantiza que grid refleja snake (muy barato)
+      {
+        let mismatch = false;
+        if (grid) {
+          for (let i = 0; i < snake.length; i++) {
+            const s = snake[i];
+            if (!inBounds(s) || !occAt(s.x, s.y)) { mismatch = true; break; }
+          }
+        }
+        if (mismatch) { rebuildGrid(); }
+      }
 
-      // IA decide en cola (no toca dir directamente)
-      if(!playerMode){
-        const path=findPath(head,food);
-        if(path&&path.length){
-          const next=path[0]; nextDir={x:next.x-head.x,y:next.y-head.y};
-        }else{
-          const o=safeDirs(head);
-          if(o.length) nextDir=o[0]; else { resetSnake(); return; }
+      const head = snake[0];
+
+      // IA decide (si no está en modo jugador)
+      if (!playerMode) {
+        const path = findPath(head, food);
+        if (path && path.length) {
+          const next = path[0];
+          nextDir = { x: next.x - head.x, y: next.y - head.y };
+        } else {
+          const o = safeDirs(head);
+          if (o.length) nextDir = o[0];
+          else { resetSnake(); return; } // sin salida: reinicia
         }
       }
 
-      // Fijar dirección (único punto)
-      dir=nextDir;
+      // Fija la dirección resultante
+      dir = nextDir;
 
+      // Calcula siguiente head y chequea límites
       const nextHead = { x: head.x + dir.x, y: head.y + dir.y };
-      const tail     = snake[snake.length - 1];
+      if (!inBounds(nextHead)) { resetSnake(); return; }
 
       // ¿Vas a comer en este paso?
-      const willEat = food && nextHead.x === food.x && nextHead.y === food.y;
+      const willEat = !!(food && nextHead.x === food.x && nextHead.y === food.y);
 
-      // Colisión con cuerpo:
-      // - Cuenta como choque si la casilla está ocupada,
-      // - excepto si es la cola y la cola SÍ va a moverse (es decir, ¡no comes!).
-      const hitsBody = occ(nextHead) && !(nextHead.x === tail.x && nextHead.y === tail.y && !willEat);
+      // Colisión con cuerpo (estricto)
+      if (hitsBodyStrict(nextHead, willEat)) { resetSnake(); return; }
 
-      if (!inBounds(nextHead) || hitsBody) {
-        resetSnake();
+      // Avanza la serpiente (primero añade cabeza)
+      snake.unshift(nextHead);
+      setOcc(nextHead.x, nextHead.y, 1);
+
+      if (willEat) {
+        placeFood();            // creces: no quitas la cola
       } else {
-        snake.unshift(nextHead);
-        occSet.add(key(nextHead));
-
-        if (willEat) {
-          placeFood();                 // creces: no quitas la cola
-        } else {
-          const old = snake.pop();     // avance normal: la cola se mueve
-          occSet.delete(key(old));
-        }
+        const old = snake.pop(); // avance normal: la cola se mueve
+        setOcc(old.x, old.y, 0);
       }
 
-      // liberar cupo de giro para el siguiente tick
+      // Libera el cupo de giro para el siguiente tick
       turnQueued = false;
     };
 
-    // --- Loop de animación con timestep fijo
-    const step=(now)=>{
-      if(!running){ prevTime = now; requestAnimationFrame(step); return; }
-
-      if(prevTime===0) prevTime = now;
+    // --- Loop de animación con timestep fijo + acumulador
+    const step = (now) => {
+      if (!running) { prevTime = now; requestAnimationFrame(step); return; }
+      if (prevTime === 0) prevTime = now;
 
       let dt = now - prevTime;
-      if (dt > 500) dt = 0; // clamp tras pestaña oculta
+      if (dt > 500) dt = 0; // clamp tras pestaña oculta (evita mega-steps)
       prevTime = now;
 
       acc += dt;
 
+      // Procesa ticks discretos (como máximo N por frame)
       let ticks = Math.min(MAX_STEPS_PER_FRAME, Math.floor(acc / STEP_MS));
-      while(ticks-- > 0){
+      while (ticks-- > 0) {
         acc -= STEP_MS;
         simulateTick();
       }
@@ -366,201 +768,115 @@ body.snake-open #snake-ctrl { display: none !important; }
       requestAnimationFrame(step);
     };
 
-    // --- Overlay / input
-    const overlayVisible=()=>!overlay.classList.contains('hidden');
-
-    // Fix: botón visible al cerrar sin scroll (override temporal)
-    let ctrlOverrideUntil=0;
-    const forceShowCtrl=(ms=4000)=>{
-      ctrlOverrideUntil=performance.now()+ms;
-      ctrlBtn.classList.remove('hidden','opacity-0','translate-y-2');
-    };
-
-    // Al abrir: NO entrar en modo jugador. IA por defecto, takeover visible, joystick lo maneja CSS.
-    const openOverlay=()=>{
-      overlay.classList.remove('hidden');
-      document.body.style.overflow='hidden';
-      document.body.classList.add('snake-open');            // <<< estado CSS
-      ctrlBtn.classList.add('opacity-0','translate-y-2','hidden');
-      requestAnimationFrame(()=>{
-        overlay.classList.remove('opacity-0');
-        resizeAll(); resizePlayCanvas(); render(playCtx);
-        overlay.setAttribute('aria-modal','true');
-        (takeoverBtn ?? exitBtn)?.focus();
-      });
-      playerMode=false; STEP_MS=SPEED_AI;
-      nextDir=dir; turnQueued=false;
-      overlay.classList.remove('player-mode');              // <<< asegúrate de salir de jugador
-      layer.classList.add('snake-play');
-      pageShell?.classList.add('page-hidden');
-      pageShell?.setAttribute('inert','');
-      hidePage();
-      drawAll();
-    };
-
-    const takeControl=()=>{
-      playerMode=true; STEP_MS=SPEED_PLAYER;
-      nextDir=dir; turnQueued=false;
-      overlay.classList.add('player-mode');                 // <<< estado CSS (oculta takeover, muestra joystick en móvil)
-      exitBtn?.focus();
-    };
-
-    const closeOverlay=()=>{
-      overlay.classList.add('opacity-0');
-      setTimeout(()=>overlay.classList.add('hidden'),300);
-      document.body.style.overflow='';
-      document.body.classList.remove('snake-open');         // <<< limpia estado overlay
-      playerMode=false; STEP_MS=SPEED_AI;
-      overlay.classList.remove('player-mode');              // <<< limpia modo jugador
-      ctrlBtn.setAttribute('aria-pressed','false');
-      layer.classList.remove('snake-play');
-      pageShell?.classList.remove('page-hidden');
-      pageShell?.removeAttribute('inert');
-      showPage();
-      drawAll();
-      ctrlBtn?.focus();
-      forceShowCtrl(5000);
-      updateCtrlVisibility();
-    };
-
-    // === Helper comparación de direcciones
-    const sameDir=(a,b)=>a&&b&&a.x===b.x&&a.y===b.y;
-
-    // --- Teclado
-    const onKey=(e)=>{
-      if(!playerMode) return;
-      if(e.repeat) return;
-      const k=e.key.toLowerCase();
-      let nd=null;
-      if(k==='arrowup'||k==='w') nd={x:0,y:-1};
-      else if(k==='arrowdown'||k==='s') nd={x:0,y:1};
-      else if(k==='arrowleft'||k==='a') nd={x:-1,y:0};
-      else if(k==='arrowright'||k==='d') nd={x:1,y:0};
-      else if(k==='escape'){ closeOverlay(); return; }
-
-      if(!nd) return;
-      if(snake.length>1&&(nd.x===-dir.x&&nd.y===-dir.y)) return;
-      if(sameDir(nd,dir)||sameDir(nd,nextDir)) return;
-
-      if(!turnQueued){ nextDir=nd; turnQueued=true; e.preventDefault(); }
-    };
-
-    // --- Joystick táctil
-    let joyActive=false;
-    let joyCenter={ x:0, y:0 };
-    const BASE_R=56, STICK_R=28, DEAD=10;
-
-    const setDirFromVector=(dx,dy)=>{
-      if(Math.hypot(dx,dy)<DEAD) return;
-      const ang=Math.atan2(dy,dx);
-      const deg=ang*180/Math.PI;
-      let nd=dir;
-      if(deg>-45&&deg<=45) nd={x:1,y:0};
-      else if(deg>45&&deg<=135) nd={x:0,y:1};
-      else if(deg<=-45&&deg>-135) nd={x:0,y:-1};
-      else nd={x:-1,y:0};
-
-      if(snake.length>1&&(nd.x===-dir.x&&nd.y===-dir.y)) return;
-      if(sameDir(nd,dir)||sameDir(nd,nextDir)) return;
-
-      if(!turnQueued){ nextDir=nd; turnQueued=true; }
-    };
-
-    const moveStickTo=(dx,dy)=>{
-      const dist=Math.min(BASE_R-STICK_R, Math.hypot(dx,dy));
-      const ang=Math.atan2(dy,dx);
-      const x=Math.cos(ang)*dist;
-      const y=Math.sin(ang)*dist;
-      joyStick.style.transform=`translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
-    };
-
-    const resetStick=()=>{ joyStick.style.transform='translate(-50%, -50%)'; };
-
-    const joyTouchStart=(ev)=>{
-      if(!playerMode) return;
-      joyActive=true;
-      const t=ev.touches[0];
-      const rect=document.getElementById('joy-base').getBoundingClientRect();
-      joyCenter.x=rect.left+rect.width/2;
-      joyCenter.y=rect.top+rect.height/2;
-      const dx=t.clientX-joyCenter.x, dy=t.clientY-joyCenter.y;
-      moveStickTo(dx,dy); setDirFromVector(dx,dy);
-      ev.preventDefault();
-    };
-
-    const joyTouchMove=(ev)=>{
-      if(!joyActive) return;
-      const t=ev.touches[0];
-      const dx=t.clientX-joyCenter.x, dy=t.clientY-joyCenter.y;
-      moveStickTo(dx,dy); setDirFromVector(dx,dy);
-      ev.preventDefault();
-    };
-
-    const joyTouchEnd=()=>{ joyActive=false; resetStick(); };
-
-    if(joyBase && joyStick){
-      joyBase.addEventListener('touchstart', joyTouchStart, { passive:false });
-      window.addEventListener('touchmove',  joyTouchMove,   { passive:false });
-      window.addEventListener('touchend',   joyTouchEnd,    { passive:true  });
-      window.addEventListener('touchcancel',joyTouchEnd,    { passive:true  });
-    }
-
-    // --- Botón por scroll (con override temporal tras cerrar overlay)
-    const updateCtrlVisibility=()=>{
-      if(overlayVisible()){
-        ctrlBtn.classList.add('hidden','opacity-0','translate-y-2');
+    // --- FAB por scroll (aparece cerca del final de página)
+    const updateCtrlVisibility = () => {
+      if (overlayVisible()) {
+        ctrlBtn.classList.add('hidden', 'opacity-0', 'translate-y-2');
         return;
       }
-      if(performance.now()<ctrlOverrideUntil){
-        ctrlBtn.classList.remove('hidden','opacity-0','translate-y-2');
+
+      // Respeta el override temporal tras cerrar el overlay
+      if (performance.now() < ctrlOverrideUntil) {
+        ctrlBtn.classList.remove('hidden', 'opacity-0', 'translate-y-2');
         return;
       }
-      const max=(document.documentElement.scrollHeight-window.innerHeight);
-      if(max<=0){
-        ctrlBtn.classList.remove('hidden','opacity-0','translate-y-2');
+
+      const max = (document.documentElement.scrollHeight - window.innerHeight);
+
+      // Si no hay scroll, muéstralo siempre
+      if (max <= 0) {
+        ctrlBtn.classList.remove('hidden', 'opacity-0', 'translate-y-2');
         return;
       }
-      const p=window.scrollY/max;
-      const show=p>0.72;
-      if(show){
+
+      // Umbral: último ~28% del scroll
+      const p = window.scrollY / max;
+      const show = p > 0.72;
+
+      if (show) {
         ctrlBtn.classList.remove('hidden');
-        requestAnimationFrame(()=>ctrlBtn.classList.remove('opacity-0','translate-y-2'));
-      }else{
-        ctrlBtn.classList.add('opacity-0','translate-y-2');
-        setTimeout(()=>{ if(ctrlBtn.classList.contains('opacity-0')) ctrlBtn.classList.add('hidden'); }, 300);
+        requestAnimationFrame(() =>
+          ctrlBtn.classList.remove('opacity-0', 'translate-y-2')
+        );
+      } else {
+        ctrlBtn.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => {
+          if (ctrlBtn.classList.contains('opacity-0')) {
+            ctrlBtn.classList.add('hidden');
+          }
+        }, 300);
       }
     };
 
-    // --- Init
-    resizeAll(); resetSnake(); drawAll();
+    // --- Init (tamaños, grid, primer render, y posible arranque del loop)
+    resizeAll();
+    grid = new Uint8Array(Math.max(1, cols * rows));
+    resetSnake();
+    drawAll();
+
     prevTime = 0; acc = 0;
-    if(!reduce) requestAnimationFrame(step);
+
+    // Arranca el loop sólo si no hay reduce-motion y la página está visible
+    if (!reduce && (overlayVisible() || document.visibilityState === 'visible')) {
+      requestAnimationFrame(step);
+    }
 
     // --- Eventos globales
     window.addEventListener('resize', () => {
       resizeAll();
-      if(overlayVisible()) resizePlayCanvas();
-      snake=snake.filter(inBounds);
-      if(!snake.length) resetSnake();
-      drawAll(); updateCtrlVisibility();
-    });
-    window.addEventListener('orientationchange', () => {
-      if(overlayVisible()) resizePlayCanvas(); drawAll();
-    });
-    document.addEventListener('visibilitychange', ()=>{
-      running=!document.hidden;
-      prevTime = 0; acc = 0;
-      if(running && !reduce) requestAnimationFrame(step);
-    });
-    window.addEventListener('scroll', () => {
-      ctrlOverrideUntil=0; updateCtrlVisibility();
-    }, { passive:true });
-    window.addEventListener('keydown', onKey, { passive:false });
+      if (overlayVisible()) resizePlayCanvas();
 
+      // Recorta cuerpo si queda fuera tras resize/orientación
+      snake = snake.filter(inBounds);
+      rebuildGrid();
+      if (!snake.length) resetSnake();
+
+      drawAll();
+      updateCtrlVisibility();
+    });
+
+    window.addEventListener('orientationchange', () => {
+      if (overlayVisible()) resizePlayCanvas();
+      drawAll();
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      // Pausa/reanuda el loop al cambiar visibilidad
+      running = !document.hidden;
+      prevTime = 0; acc = 0;
+      if (running && !reduce) requestAnimationFrame(step);
+    });
+
+    window.addEventListener('scroll', () => {
+      ctrlOverrideUntil = 0; // al hacer scroll, cancela override
+      updateCtrlVisibility();
+    }, { passive: true });
+
+    window.addEventListener('keydown', onKey, { passive: false });
+
+    // Controles de overlay
     ctrlBtn.addEventListener('click', openOverlay);
-    exitBtn.addEventListener('click', closeOverlay);
+    exitBtn.addEventListener('click',  closeOverlay);
     takeoverBtn?.addEventListener('click', takeControl);
 
     updateCtrlVisibility();
-  });
+  };
+
+  // — Arranque diferido: "lo último" —
+  const scheduleInit = () => {
+    // Espera a que TODO haya cargado primero (idle si existe, fallback si no)
+    const start = () => {
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => init(), { timeout: 5000 });
+      } else {
+        // Fallback si el navegador no soporta rIC
+        setTimeout(() => init(), 1500);
+      }
+    };
+
+    if (document.readyState === 'complete') start();
+    else window.addEventListener('load', start, { once: true });
+  };
+
+  scheduleInit();
 </script>

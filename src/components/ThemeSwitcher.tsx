@@ -140,30 +140,13 @@ export function ThemeColorRail({ locale = "es" as Locale }: { locale?: Locale })
  * 3) FAB de colores (MÓVIL): abajo-izquierda con dropdown
  * ------------------------------------------------------------- */
 export function ThemeColorFab({
-  locale = "es" as Locale,
-  showAt = 120,
+  locale = "es" as Locale
 }: {
   locale?: Locale;
-  showAt?: number;
 }) {
   const { baseTheme, changeBaseTheme, getThemeOptions } = useTheme();
   const dict = DICTS[locale];
   const options = getThemeOptions(locale);
-
-  const [visibleMobile, setVisibleMobile] = useState(false);
-  useEffect(() => {
-    const onScrollResize = () => {
-      if (window.innerWidth < 768) setVisibleMobile(window.scrollY > showAt);
-      else setVisibleMobile(false);
-    };
-    onScrollResize();
-    window.addEventListener("scroll", onScrollResize, { passive: true });
-    window.addEventListener("resize", onScrollResize);
-    return () => {
-      window.removeEventListener("scroll", onScrollResize);
-      window.removeEventListener("resize", onScrollResize);
-    };
-  }, [showAt]);
 
   return (
     <div
@@ -177,7 +160,6 @@ export function ThemeColorFab({
         "border border-white/20 dark:border-slate-700/60",
         "shadow-xl hover:shadow-2xl hover:border-primary-800/50 dark:hover:border-primary-200/50",
         "transition",
-        visibleMobile ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
       ].join(" ")}
     >
       <Dropdown
@@ -232,15 +214,13 @@ export function ThemeColorFab({
  * ------------------------------------------------------------- */
 export default function ThemeColorControls({
   locale = "es" as Locale,
-  showAt = 120,
 }: {
   locale?: Locale;
-  showAt?: number;
 }) {
   return (
     <>
       <ThemeColorRail locale={locale} />
-      <ThemeColorFab locale={locale} showAt={showAt} />
+      <ThemeColorFab locale={locale} />
     </>
   );
 }

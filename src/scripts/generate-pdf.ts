@@ -285,16 +285,32 @@ function tpl(d: Dict, imgSrc: string) {
           </h2>
           <div class="mt-4 font-bold text-gray-700 grid grid-cols-4 gap-x-4">
             <ul class="space-y-2">
-              <li>Python</li><li>JavaScript</li><li>C</li><li>C++</li><li>CI/CD</li>
+              <li>Python</li>
+              <li>Kotlin</li>
+              <li>C</li>
+              <li>C++</li>
+              <li>Java</li>
             </ul>
             <ul class="space-y-2">
-              <li>Java</li><li>Kotlin</li><li>Linux</li><li>Shell</li><li>OpenStack</li>
+              <li>Ubuntu</li>
+              <li>Linux</li>
+              <li>Centos</li>
+              <li>Shell</li>
+              <li>KVM / QEMU</li>
             </ul>
             <ul class="space-y-2">
-              <li>SQL</li><li>Docker</li><li>React</li><li>Next.js</li><li>KVM / QEMU</li>
+              <li>Docker</li>
+              <li>Docker Compose</li>
+              <li>Git</li>
+              <li>Github Actions</li>
+              <li>CI/CD</li>
             </ul>
             <ul class="space-y-2">
-              <li>Git</li><li>Docker Compose</li><li>Tailwind</li><li>ROS 2</li><li>Github Actions</li>
+              <li>OpenStack</li>
+              <li>JavaScript</li>
+              <li>React</li>
+              <li>Next.js</li>
+              <li>SQL</li>
             </ul>
           </div>
         </div>
@@ -318,7 +334,7 @@ async function make(lang: "es" | "en", outNiceName: string, preset: GSPreset) {
   let imgDataUrl: string;
   try {
     const sharp = await import("sharp");
-    const buf = await sharp.default(resolve("public/foto.png"))
+    const buf = await sharp.default(resolve("src/assets/profile.png"))
       .resize(IMG_TARGET_SIZE, IMG_TARGET_SIZE, { fit: "cover" })
       .flatten({ background: "#ffffff" })   // <- clave para evitar negro
       .jpeg({ quality: IMG_JPEG_QUALITY, mozjpeg: true })

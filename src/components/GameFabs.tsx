@@ -10,7 +10,7 @@ type BaseProps = {
   game: Game;
   title?: string;
   className?: string;
-  onClick?: () => void; // opcional: tu JS ya hace addEventListener por id
+  onClick?: () => void;
 };
 
 type TakeoverProps = Omit<BaseProps, "title"> & {
@@ -26,8 +26,8 @@ const baseBox =
   "shadow-xl hover:shadow-2xl hover:border-primary-800/50 dark:hover:border-primary-200/50 " +
   "transition z-40";
 
-const posCtrl     = "fixed bottom-20 lg:bottom-4 right-4 h-14 w-14";
-const posExit     = "fixed bottom-4 right-4 h-14 w-14";
+const posCtrl     = "fixed bottom-20 lg:bottom-4 left-4 size-14";
+const posExit     = "fixed top-4 right-4 size-14";
 const posTakeover = "fixed bottom-4 left-1/2 -translate-x-1/2 h-14 px-2";
 
 // --- títulos por defecto

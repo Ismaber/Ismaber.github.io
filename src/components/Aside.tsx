@@ -27,7 +27,8 @@ export interface AsideProps {
   contactTitle?: string;
   languageTitle?: string;
   skillsTitle?: string;
-  bordered?: boolean; // controla el borde SOLO en la carta de desktop
+  bordered?: boolean;
+  children?: React.ReactNode;
 }
 
 /* --------- Iconos sociales --------- */
@@ -42,8 +43,6 @@ const socialIcon: Record<SocialKind, React.ReactNode> = {
    1) SOLO EL CONTENIDO INTERIOR (sin marco/carta)
    ============================================================ */
 export function AsideContent({
-  imgSrc,
-  altText,
   headline,
   email,
   city,
@@ -54,20 +53,21 @@ export function AsideContent({
   contactTitle = "CONTACTO",
   languageTitle = "IDIOMAS",
   skillsTitle = "HABILIDADES",
+  children,
 }: AsideProps) {
   return (
     <div className="rt">
       <h2 id="profile-title" className="sr-only">Perfil</h2>
 
-      <img
-        src={imgSrc}
-        alt={altText}
-        loading="lazy"
-        decoding="async"
-        className="w-40 h-40 mx-auto rounded-full object-cover ring-4 ring-primary-200 border-4 border-primary-300 shadow-lg mb-4
+      <div
+        className="w-40 h-40 mx-auto mb-4
+                   ring-4 ring-primary-200 border-4 border-primary-300
+                   rounded-full shadow-lg overflow-hidden
                    transition group-hover:scale-[1.03] group-hover:-rotate-1 group-hover:shadow-primary-500/35
                    dark:group-hover:shadow-primary-500/35 dark:ring-primary-900/50 dark:border-primary-500/50"
-      />
+      >
+        {children}
+      </div>
 
       <p className="text-center text-sm text-slate-600 italic dark:text-slate-300">
         {headline}
@@ -146,7 +146,7 @@ export function AsideContent({
 /* ============================================================
    2) CARTA DE DESKTOP (envoltorio con borde)
    ============================================================ */
-export function AsideCard(props: AsideProps) {
+export function AsideCard({ children, ...props }: AsideProps) {
   const { bordered = true } = props;
   return (
     <aside
@@ -158,7 +158,7 @@ export function AsideCard(props: AsideProps) {
         bordered ? "border border-slate-200 dark:border-slate-800" : "border-0",
       ].join(" ")}
     >
-      <AsideContent {...props} />
+      <AsideContent {...props}>{children}</AsideContent>
     </aside>
   );
 }
@@ -166,7 +166,7 @@ export function AsideCard(props: AsideProps) {
 /* ============================================================
    3) RESPONSIVE: desktop = carta, móvil = botón + drawer (sin header)
    ============================================================ */
-export function ResponsiveAside(props: AsideProps) {
+export function ResponsiveAside({ children, ...props }: AsideProps) {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
 
   // cuando se abre, ocultamos el FAB para que no quede por encima
@@ -178,7 +178,7 @@ export function ResponsiveAside(props: AsideProps) {
     <>
       {/* Desktop / tablet */}
       <div className="hidden lg:block">
-        <AsideCard {...props} />
+        <AsideCard {...props}>{children}</AsideCard>
       </div>
 
       {/* Móvil */}
@@ -213,8 +213,7 @@ export function ResponsiveAside(props: AsideProps) {
           </Button>
         </div>
 
-
-        {/* Drawer derecha SIN HEADER */}
+        {/* Drawer derecha */}
         <Drawer
           hideCloseButton
           isOpen={isOpen}
@@ -226,22 +225,22 @@ export function ResponsiveAside(props: AsideProps) {
           <DrawerContent className="backdrop-blur-xl bg-white/50 dark:bg-slate-900/50">
             {() => (
               <>
-              <DrawerHeader className="absolute top-0 inset-x-0 z-50 flex flex-row gap-2 px-2 py-2 justify-between">
-                <Button
-                  isIconOnly
-                  size="sm"
-                  color="primary"
-                  variant="light"
-                  onPress={onClose}
-                >
-                  <FaXmark/>
-                </Button>
-              </DrawerHeader>
-              <DrawerBody className="pb-8">
-                <div className="p-4">
-                  <AsideContent {...props} />
-                </div>
-              </DrawerBody>
+                <DrawerHeader className="absolute top-0 inset-x-0 z-50 flex flex-row gap-2 px-2 py-2 justify-between">
+                  <Button
+                    isIconOnly
+                    size="sm"
+                    color="primary"
+                    variant="light"
+                    onPress={onClose}
+                  >
+                    <FaXmark/>
+                  </Button>
+                </DrawerHeader>
+                <DrawerBody className="pb-8">
+                  <div className="p-4">
+                    <AsideContent {...props}>{children}</AsideContent>
+                  </div>
+                </DrawerBody>
               </>
             )}
           </DrawerContent>
@@ -250,7 +249,4 @@ export function ResponsiveAside(props: AsideProps) {
     </>
   );
 }
-/* Compatibilidad: si en algún sitio importabas default desde Aside.tsx,
-   puedes decidir exportar algo por defecto. Si no lo necesitas, ignora esto.
-*/
 // export default ResponsiveAside; // opcional

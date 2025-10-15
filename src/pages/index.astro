@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <title>Redirigiendo…</title>
-    <meta name="robots" content="noindex" />
+    <meta name="robots" content="noindex, follow" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
       html,body{height:100%;margin:0}
@@ -73,9 +73,8 @@
       (function () {
         const SUPPORTED = ['es','en'];
         const DEFAULT_LOCALE = 'en';
-        const BASE = '/'; // si fuese Project Page, usa '/mi-repo/'
+        const BASE = '/';
 
-        // Une BASE + path normalizando la barra y evitando //.
         const join = (p: string) =>
           (BASE.endsWith('/') ? BASE : BASE + '/')
           + p.replace(/^\//,'');

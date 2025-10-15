@@ -12,7 +12,6 @@ type Labels = {
 
 type Props = {
   id?: string;
-  showAt?: number;
   offset?: number;
   className?: string;
   labels?: Labels;
@@ -20,7 +19,6 @@ type Props = {
 
 export default function SideNav({
   id = "sideNav",
-  showAt = 120,
   offset = 12,
   className = "",
   labels = {
@@ -43,19 +41,6 @@ export default function SideNav({
   const getEffectiveOffset = () =>
     getCSSPxVar('--header-h') + getCSSPxVar('--extra-offset');
 
-  useEffect(() => {
-    const onScrollResize = () => {
-      if (window.innerWidth < 768) setVisibleMobile(window.scrollY > showAt);
-      else setVisibleMobile(true);
-    };
-    onScrollResize();
-    window.addEventListener("scroll", onScrollResize, { passive: true });
-    window.addEventListener("resize", onScrollResize);
-    return () => {
-      window.removeEventListener("scroll", onScrollResize);
-      window.removeEventListener("resize", onScrollResize);
-    };
-  }, [showAt]);
 
   useEffect(() => {
     const ids = ["about", "experience", "education", "tools"];
@@ -144,9 +129,6 @@ export default function SideNav({
         "border border-white/20 dark:border-slate-700/60",
         "shadow-xl hover:shadow-2xl hover:border-primary-800/50 dark:hover:border-primary-200/50",
         "transition",
-        visibleMobile
-          ? "opacity-100 pointer-events-auto"
-          : "opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto",
         className,
       ].join(" ")}
     >

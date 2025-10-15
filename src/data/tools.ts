@@ -33,7 +33,7 @@ export const TOOLS: Tool[] = [
 
   // Backend / DB
   { id: "sql", label: "SQL", icon: SiSqlite, ring: "ring-sky-900/50", category: "backendDb" },
-  { id: "nodejs", label: "NodeJS", icon: SiNodedotjs, ring: "ring-lime-500/50", category: "backendDb" },
+  { id: "nodejs", label: "Node.js", icon: SiNodedotjs, ring: "ring-lime-500/50", category: "backendDb" },
   { id: "express", label: "Express", icon: SiExpress, ring: "ring-gray-500/50", category: "backendDb" },
   { id: "postgres", label: "PostgreSQL", icon: SiPostgresql, ring: "ring-blue-800/50", category: "backendDb" },
   { id: "mongo", label: "MongoDB", icon: SiMongodb, ring: "ring-green-600/50", category: "backendDb" },

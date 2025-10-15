@@ -5,6 +5,9 @@ import { Chip } from "@heroui/react";
 import { FaCircleUser, FaBriefcase, FaGraduationCap, FaWrench } from 'react-icons/fa6';
 import { ResponsiveAside, type SocialLink } from './Aside';
 import ToolsByCategory from './ToolsByCategory';
+import { Image } from "astro:assets";
+
+import avatar from "../assets/profile.png"; // o la ruta correcta a tu imagen
 
 const locale = (Astro.currentLocale ?? 'es') as 'es' | 'en';
 
@@ -62,7 +65,7 @@ const experiences: ExperienceItem[] =
     <!-- Aside -->
     <ResponsiveAside
       client:load
-      imgSrc="/foto.png"
+      imgSrc={avatar.src}               
       altText={t(locale, 'profile.alt')}
       headline={t(locale, 'headline')}
       email="ismael2822001@gmail.com"
@@ -74,7 +77,16 @@ const experiences: ExperienceItem[] =
       contactTitle={t(locale, 'sections.contact')}
       languageTitle={t(locale, 'sections.languages')}
       skillsTitle={t(locale, 'sections.skills')}
-    />
+    >
+      <Image
+        src={avatar}
+        alt={t(locale, 'profile.alt')}
+        widths={[160, 320, 480, 640]}
+        sizes="10rem"
+        quality={90}
+        loading={"eager"}
+      />
+    </ResponsiveAside>
 
 
     <!-- Main content -->

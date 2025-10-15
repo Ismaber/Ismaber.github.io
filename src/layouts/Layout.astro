@@ -21,13 +21,26 @@ const {
   noindex = false
 } = Astro.props as Props;
 
-// Requiere `site` definido en astro.config.(m)js
-const canonical = new URL(Astro.url.pathname, Astro.site);
+const canonical = Astro.url;
 
 // Hreflang: ajusta tus rutas reales (ej. /en/... para inglés)
 const path = Astro.url.pathname;
-const altEs = path.replace(/^\/en(\/|$)/, '/');      // versión ES
-const altEn = path.startsWith('/en') ? path : `/en${path}`; // versión EN
+let altEs: string;
+let altEn: string;
+
+if (path === '/' || path === '') {
+  altEs = '/es/';
+  altEn = '/en/';
+} else if (path === '/es' || path.startsWith('/es/')) {
+  altEs = path.endsWith('/') ? path : path + '/';
+  altEn = altEs.replace(/^\/es\//, '/en/').replace(/^\/es$/, '/en');
+} else if (path === '/en' || path.startsWith('/en/')) {
+  altEn = path.endsWith('/') ? path : path + '/';
+  altEs = altEn.replace(/^\/en\//, '/es/').replace(/^\/en$/, '/es');
+} else {
+  altEs = '/es/';
+  altEn = '/en/';
+}
 
 const siteName = t(locale, 'siteName') ?? 'Mi Portfolio';
 const twitterHandle = null;
@@ -141,6 +154,6 @@ const robotsContent = noindex ? 'noindex, nofollow' : 'index, follow';
   </head>
   <body>
     <Background/>
-    <slot />
+    <slot id="page-shell"/>
   </body>
 </html>
