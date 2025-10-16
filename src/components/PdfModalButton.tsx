@@ -85,7 +85,7 @@ export default function PdfModalButton({ pdfUrl, labels }: PdfModalButtonProps) 
               </ModalHeader>
               <ModalBody>
                 {isMobileOrNoSupport ? (
-                  <PdfViewerClient url={pdfUrl} className="h-[75vh]" />
+                  <PdfViewerClient url={pdfUrl}  />
                 ) : (
                   <iframe
                     title={labels.modal_title}

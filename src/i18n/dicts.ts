@@ -101,6 +101,17 @@ export const DICTS = {
       violet: "Violet",
       teal: "Teal",
     },
+    games: {
+      snake:  { 
+        ctrl: "Take control of game",
+        exit: "Return",
+        takeover: "Take control",
+        hint: {
+          desktop: "Use ← ↑ → ↓ or WASD to move",
+          mobile: "Use the joystick to move",
+        },
+      },
+    },
   },
 
   es: {
@@ -203,6 +214,17 @@ export const DICTS = {
       sky: "Cielo",
       violet: "Violeta",
       teal: "Verde azulado",
+    },
+    games: {
+      snake: {
+        ctrl: "Tomar control del juego",
+        exit: "Volver",
+        takeover: "Tomar el control",
+        hint: {
+          desktop: "Usa ← ↑ → ↓ o WASD para moverte",
+          mobile: "Usa el joystick para moverte",
+        },
+      },
     },
   }
 } as const

@@ -173,27 +173,65 @@ function tpl(d: Dict, imgSrc: string) {
           <div class="mt-6 space-y-3">
             <p class="flex items-center space-x-1 no-abs">
               <span class="icon"><i class="fas fa-code"></i></span>
-              <a class="link" href="https://Ismaber.github.io" aria-label="Llamar a Ismael">Ismaber.github.io</a>
+              <a
+                class="link"
+                href="https://Ismaber.github.io"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Visitar web de Ismael"
+              >
+                Ismaber.github.io
+              </a>
             </p>
 
             <p class="flex items-center space-x-1 no-abs">
               <span class="icon"><i class="fas fa-envelope"></i></span>
-              <a class="link" href="mailto:ismael2822001@gmail.com" aria-label="Enviar correo a Ismael">ismael2822001@gmail.com</a>
+              <a
+                class="link"
+                href="mailto:ismael2822001@gmail.com"
+                aria-label="Enviar correo a Ismael"
+              >
+                ismael2822001@gmail.com
+              </a>
             </p>
 
             <p class="flex items-center space-x-1 no-abs">
               <span class="icon"><i class="fas fa-map-marker-alt"></i></span>
-              <span>${d.location.city}</span>
+              <a
+                class="link"
+                href="https://www.google.com/maps/place/Zaragoza/@41.6488,-0.8891,12z"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Ver ubicación de Zaragoza en Google Maps"
+              >
+                <span>${d.location.city}</span>
+              </a>
             </p>
 
             <p class="flex items-center space-x-1 no-abs">
               <span class="icon"><i class="fa-brands fa-linkedin"></i></span>
-              <a class="link" href="https://www.linkedin.com/in/ismael-berdusán-muñoz-a72a41338/" target="_blank" rel="noopener">Ismael Berdusán Muñoz</a>
+              <a 
+                class="link"
+                href="https://www.linkedin.com/in/ismael-berdusán-muñoz-a72a41338/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Ver Linkedin de Ismael"
+              >
+                Ismael Berdusán Muñoz
+              </a>
             </p>
 
             <p class="flex items-center space-x-1 no-abs">
               <span class="icon"><i class="fa-brands fa-github"></i></span>
-              <a class="link" href="https://github.com/Ismaber" target="_blank" rel="noopener">Ismaber</a>
+              <a 
+                class="link"
+                href="https://github.com/Ismaber"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Ver Github de Ismael"
+              >
+                Ismaber
+              </a>
             </p>
           </div>                
         </div>

@@ -1,8 +1,10 @@
-import {type ReactNode} from "react";
-import {Button} from "@heroui/react";
-import {FaBackward} from "react-icons/fa6";
-import {GiSnake} from "react-icons/gi";
-import {FaBomb} from "react-icons/fa";
+import { type ReactNode } from "react";
+import { Button } from "@heroui/react";
+import { FaBackward } from "react-icons/fa6";
+import { GiSnake } from "react-icons/gi";
+import { FaBomb } from "react-icons/fa";
+import { t } from "../i18n/store";
+import type { Locale } from "../i18n/dicts";
 
 export type Game = "snake" | "msweep";
 
@@ -11,6 +13,7 @@ type BaseProps = {
   title?: string;
   className?: string;
   onClick?: () => void;
+  locale?: Locale;
 };
 
 type TakeoverProps = Omit<BaseProps, "title"> & {
@@ -29,12 +32,6 @@ const baseBox =
 const posCtrl     = "fixed bottom-20 lg:bottom-4 left-4 size-14";
 const posExit     = "fixed top-4 right-4 size-14";
 const posTakeover = "fixed bottom-4 left-1/2 -translate-x-1/2 h-14 px-2";
-
-// --- títulos por defecto
-const defaultTitles = {
-  snake:  { ctrl: "Tomar control del Snake",       exit: "Volver a IA", takeover: "Tomar el control" },
-  msweep: { ctrl: "Tomar control del Minesweeper", exit: "Volver a IA", takeover: "Tomar el control" },
-} as const;
 
 // --- iconos por juego para ctrl/exit
 const ctrlIcon: Record<Game, ReactNode> = {
@@ -56,6 +53,7 @@ function Box({
         type="button"
         aria-pressed="false"
         title={title}
+        aria-label={title}
         variant="ghost"
         color="primary"
         className="size-10"
@@ -69,12 +67,15 @@ function Box({
 
 // --- FABs públicos: uno por acción
 
-export function GameCtrlFab({ game, title, className, onClick }: BaseProps) {
+export function GameCtrlFab({ game, title, className, onClick, locale }: BaseProps) {
+  const loc = (locale ?? "es") as Locale;             // 👈 fallback
   const id = `${game}-ctrl`; // ej: msweep-ctrl / snake-ctrl
+  const computedTitle = title ?? (t(loc, `games.${game}.ctrl`) as string);
+
   return (
     <Box
       id={id}
-      title={title ?? defaultTitles[game].ctrl}
+      title={computedTitle}
       className={[posCtrl, className ?? ""].join(" ")}
       onClick={onClick}
     >
@@ -83,12 +84,15 @@ export function GameCtrlFab({ game, title, className, onClick }: BaseProps) {
   );
 }
 
-export function GameExitFab({ game, title, className, onClick }: BaseProps) {
+export function GameExitFab({ game, title, className, onClick, locale }: BaseProps) {
+  const loc = (locale ?? "es") as Locale;
   const id = `${game}-exit`;
+  const computedTitle = title ?? (t(loc, `games.${game}.exit`) as string);
+
   return (
     <Box
       id={id}
-      title={title ?? defaultTitles[game].exit}
+      title={computedTitle}
       className={[posExit, className ?? ""].join(" ")}
       onClick={onClick}
     >
@@ -97,15 +101,18 @@ export function GameExitFab({ game, title, className, onClick }: BaseProps) {
   );
 }
 
-export function GameTakeoverFab({ game, takeoverLabel, className, onClick }: TakeoverProps) {
+export function GameTakeoverFab({ game, takeoverLabel, className, onClick, locale }: TakeoverProps) {
+  const loc = (locale ?? "es") as Locale;
   const id = `${game}-takeover`;
-  const label = takeoverLabel ?? defaultTitles[game].takeover;
+  const label = takeoverLabel ?? (t(loc, `games.${game}.takeover`) as string);
+
   return (
     <div id={id} className={[baseBox, posTakeover, className ?? ""].join(" ")} onClick={onClick}>
       <Button
         type="button"
         aria-pressed="false"
         title={label}
+        aria-label={label}
         variant="ghost"
         color="primary"
         className="px-4 text-sm font-medium"

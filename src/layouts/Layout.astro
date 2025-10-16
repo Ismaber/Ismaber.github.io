@@ -3,6 +3,8 @@
 import '../styles/global.css'
 import Background from "../components/Background.astro";
 import { t } from '../i18n/store.ts';
+import Snake from '../components/Snake.astro';
+import { IDS } from '../constants/game';
 
 type Props = {
   title?: string;
@@ -154,6 +156,7 @@ const robotsContent = noindex ? 'noindex, nofollow' : 'index, follow';
   </head>
   <body>
     <Background/>
-    <slot id="page-shell"/>
+    <slot id={IDS.pageShell}/>
+    <Snake/>
   </body>
 </html>
