@@ -1,6 +1,8 @@
-import { IDS } from "../constants/game";
+import { IDS, CLS } from "../constants/game";
+import injectGameStyles from "./gameCss";
 
 export function init() {
+  injectGameStyles();
   // --- Props (antes: Astro.props)
   const pageShellId = IDS.pageShell;
   const backgroundRootId = IDS.backgroundRoot;
@@ -447,7 +449,7 @@ export function init() {
   const openOverlay = () => {
     overlay!.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
-    document.body.classList.add('snake-open');
+    document.body.classList.add(CLS.gameOpen);
     ctrlBtn!.classList.add('opacity-0', 'translate-y-2', 'hidden');
 
     requestAnimationFrame(() => {
@@ -462,8 +464,8 @@ export function init() {
     playerMode = false; STEP_MS = SPEED_AI;
     nextDir = dir; turnQueued = false;
 
-    overlay!.classList.remove('player-mode');
-    layer!.classList.add('snake-play');
+    overlay!.classList.remove(CLS.playerMode);
+    layer!.classList.add(CLS.gamePlay);
 
     pageShell?.classList.add('page-hidden');
     pageShell?.setAttribute('inert', '');
@@ -475,7 +477,7 @@ export function init() {
   const takeControl = () => {
     playerMode = true; STEP_MS = SPEED_PLAYER;
     nextDir = dir; turnQueued = false;
-    overlay!.classList.add('player-mode');
+    overlay!.classList.add(CLS.playerMode);
     exitBtn?.focus();
   };
 
@@ -484,13 +486,13 @@ export function init() {
     setTimeout(() => overlay!.classList.add('hidden'), 300);
 
     document.body.style.overflow = '';
-    document.body.classList.remove('snake-open');
+    document.body.classList.remove(CLS.gameOpen);
 
     playerMode = false; STEP_MS = SPEED_AI;
-    overlay!.classList.remove('player-mode');
+    overlay!.classList.remove(CLS.playerMode);
 
     ctrlBtn!.setAttribute('aria-pressed', 'false');
-    layer!.classList.remove('snake-play');
+    layer!.classList.remove(CLS.gamePlay);
 
     pageShell?.classList.remove('page-hidden');
     pageShell?.removeAttribute('inert');

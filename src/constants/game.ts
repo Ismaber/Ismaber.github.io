@@ -1,22 +1,35 @@
-// IDs y clases "globales" del proyecto
+// constants/game.ts
 export const IDS = {
   pageShell: 'page-shell',
   backgroundRoot: 'background-root',
   snake: {
-    layer: 'snake-layer',
-    overlay: 'snake-overlay',
-    ctrl: 'snake-ctrl',
-    exit: 'snake-exit',
-    takeover: 'snake-takeover',
-    bgCanvas: 'snake-bg',
-    playCanvas: 'snake-play',
-    joy: 'snake-joy',
+    layer: 'game-layer',
+    overlay: 'game-overlay',
+    ctrl: 'game-ctrl',
+    exit: 'game-exit',
+    takeover: 'game-takeover',
+    bgCanvas: 'game-bg',
+    playCanvas: 'game-play',
+    joy: 'game-joy',
     joyBase: 'joy-base',
     joyStick: 'joy-stick',
-    hint: 'snake-hint',
+    hint: 'game-hint',
   },
 } as const;
 
-// Helpers opcionales
-export type IdKey = keyof typeof IDS | keyof typeof IDS.snake;
-export const sel = (id: string) => `#${id}`;
+export const CLS = {
+  gameOpen: 'game-open',
+  playerMode: 'player-mode',
+  pageHidden: 'page-hidden',
+  gamePlay: 'game-play',
+  hintDesktop: 'hint-desktop',
+  hintMobile: 'hint-mobile',
+} as const;
+
+type IdKeys  = typeof IDS[keyof typeof IDS] | typeof IDS.snake[keyof typeof IDS.snake];
+type ClsKeys = typeof CLS[keyof typeof CLS];
+
+export const sel = {
+  id: (id: IdKeys) => `#${id}`,
+  cls: (c: ClsKeys) => `.${c}`,
+};

@@ -1,23 +1,21 @@
 import { type ReactNode } from "react";
 import { Button } from "@heroui/react";
-import { FaBackward } from "react-icons/fa6";
 import { GiSnake } from "react-icons/gi";
 import { FaBomb } from "react-icons/fa";
+import { MdKeyboardReturn } from "react-icons/md";
 import { t } from "../i18n/store";
 import type { Locale } from "../i18n/dicts";
 
 export type Game = "snake" | "msweep";
 
 type BaseProps = {
-  game: Game;
-  title?: string;
   className?: string;
   onClick?: () => void;
   locale?: Locale;
 };
 
-type TakeoverProps = Omit<BaseProps, "title"> & {
-  takeoverLabel?: string;
+type CtrlProps = BaseProps & {
+  game: Game;
 };
 
 // --- estilos comunes
@@ -33,14 +31,10 @@ const posCtrl     = "fixed bottom-20 md:bottom-4 left-4 size-14";
 const posExit     = "fixed top-4 right-4 size-14";
 const posTakeover = "fixed bottom-4 left-1/2 -translate-x-1/2 h-14 px-2";
 
-// --- iconos por juego para ctrl/exit
+// --- iconos por juego para ctrl
 const ctrlIcon: Record<Game, ReactNode> = {
   snake:  <GiSnake />,
   msweep: <FaBomb  />,
-};
-const exitIcon: Record<Game, ReactNode> = {
-  snake:  <FaBackward />,
-  msweep: <FaBackward />,
 };
 
 // --- núcleo privado para no repetir
@@ -67,10 +61,10 @@ function Box({
 
 // --- FABs públicos: uno por acción
 
-export function GameCtrlFab({ game, title, className, onClick, locale }: BaseProps) {
-  const loc = (locale ?? "es") as Locale;             // 👈 fallback
-  const id = `${game}-ctrl`; // ej: msweep-ctrl / snake-ctrl
-  const computedTitle = title ?? (t(loc, `games.${game}.ctrl`) as string);
+export function GameCtrlFab({ game, className, onClick, locale }: CtrlProps) {
+  const loc = (locale ?? "es") as Locale;
+  const id = "game-ctrl";
+  const computedTitle = t(loc, "games.ctrl") as string;
 
   return (
     <Box
@@ -84,10 +78,10 @@ export function GameCtrlFab({ game, title, className, onClick, locale }: BasePro
   );
 }
 
-export function GameExitFab({ game, title, className, onClick, locale }: BaseProps) {
+export function GameExitFab({ className, onClick, locale }: BaseProps) {
   const loc = (locale ?? "es") as Locale;
-  const id = `${game}-exit`;
-  const computedTitle = title ?? (t(loc, `games.${game}.exit`) as string);
+  const id = "game-exit";
+  const computedTitle = t(loc, "games.exit") as string;
 
   return (
     <Box
@@ -96,15 +90,15 @@ export function GameExitFab({ game, title, className, onClick, locale }: BasePro
       className={[posExit, className ?? ""].join(" ")}
       onClick={onClick}
     >
-      {exitIcon[game]}
+      <MdKeyboardReturn />
     </Box>
   );
 }
 
-export function GameTakeoverFab({ game, takeoverLabel, className, onClick, locale }: TakeoverProps) {
+export function GameTakeoverFab({ className, onClick, locale }: BaseProps) {
   const loc = (locale ?? "es") as Locale;
-  const id = `${game}-takeover`;
-  const label = takeoverLabel ?? (t(loc, `games.${game}.takeover`) as string);
+  const id = "game-takeover";
+  const label = t(loc, "games.takeover") as string;
 
   return (
     <div id={id} className={[baseBox, posTakeover, className ?? ""].join(" ")} onClick={onClick}>

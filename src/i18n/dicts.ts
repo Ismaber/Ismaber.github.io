@@ -69,6 +69,11 @@ export const DICTS = {
       place: "University of Zaragoza",
       date: "2019 - 2025",
       tracks: {
+        tfg: {
+          title: "Final Degree Project",
+          tfgTitle: "Performance analysis of a ground robot's teleoperation over a Wi-Fi Mesh network with Fast-Roaming",
+          desc: "The project evaluated the feasibility of commercial networks alongside <b>Fast-Roaming</b> (<b>IEEE 802.11r/k/v</b>) as a communication layer for <b>ROS 2</b>, analyzing <b>latency</b>, <b>jitter</b>, <b>bandwidth</b>, and <b>packet loss</b> during teleoperation. It also involved the <b>development of a Python program</b> to monitor performance metrics in real time and experimental validation using a <b>Turtlebot</b> robot."
+        },
         sys: {
           title: "Systems Administration",
           desc: "Implementation of IT infrastructures and managing <b>VLANs</b> and <b>IPv6</b> environments. Leveraging automation tools developed in <b>shell scripting</b> and <b>Ruby</b> to streamline remote management tasks. Experience spans across <b>OpenBSD</b> and <b>FreeBSD</b>, with a focus on critical applications such as <b>NTP</b>, <b>DNS</b>, <b>NFS</b>, and <b>FreeIPA</b> for domain management."
@@ -89,7 +94,7 @@ export const DICTS = {
       devops: "DevOps",
       web: "Web",
       systems: "Systems / Virtualization",
-      robotics: "Robotics",
+      docs: "Documentation",
     },
     themeNames: {
       indigo: "Indigo",
@@ -102,10 +107,10 @@ export const DICTS = {
       teal: "Teal",
     },
     games: {
+      ctrl: "Show game",
+      exit: "Return",
+      takeover: "Take control",
       snake:  { 
-        ctrl: "Take control of game",
-        exit: "Return",
-        takeover: "Take control",
         hint: {
           desktop: "Use ← ↑ → ↓ or WASD to move",
           mobile: "Use the joystick to move",
@@ -183,6 +188,11 @@ export const DICTS = {
       place: "Universidad de Zaragoza",
       date: "2019 - 2025",
       tracks: {
+        tfg: {
+          title: "Trabajo Fin de Grado",
+          tfgTitle: "Análisis del rendimiento de la teleoperación de un robot terrestre sobre una red Wi-Fi Mesh con Fast-Roaming",
+          desc: "Se evaluó la viabilidad de estas redes comerciales junto con el <b>Fast-Roaming</b> (<b>IEEE 802.11r/k/v</b>) como soporte de comunicación para <b>ROS 2</b>, midiendo métricas como <b>latencia</b>, <b>jitter</b>, <b>ancho de banda</b> y <b>pérdida de paquetes</b> durante la teleoperación. El trabajo incluyó la <b>implementación de un programa en Python</b> para monitorizar el rendimiento en tiempo real y la validación experimental mediante un robot <b>Turtlebot</b>."
+        },
         sys: {
           title: "Administración de Sistemas",
           desc: "Implementación de infraestructuras TI y gestión de entornos <b>VLAN</b> e <b>IPv6</b>. Uso de herramientas de automatización desarrolladas en <b>shell scripting</b> y <b>Ruby</b> para optimizar tareas de administración remota. Experiencia en <b>OpenBSD</b> y <b>FreeBSD</b>, con foco en aplicaciones críticas como <b>NTP</b>, <b>DNS</b>, <b>NFS</b> y <b>FreeIPA</b> para la gestión de dominios."
@@ -203,7 +213,7 @@ export const DICTS = {
       devops: "DevOps",
       web: "Web",
       systems: "Sistemas / Virtualización",
-      robotics: "Robótica",
+      docs: "Documentación",
     },
     themeNames: {
       indigo: "Índigo",
@@ -216,10 +226,10 @@ export const DICTS = {
       teal: "Verde azulado",
     },
     games: {
+      ctrl: "Ver juego",
+      exit: "Volver",
+      takeover: "Tomar el control",
       snake: {
-        ctrl: "Tomar control del juego",
-        exit: "Volver",
-        takeover: "Tomar el control",
         hint: {
           desktop: "Usa ← ↑ → ↓ o WASD para moverte",
           mobile: "Usa el joystick para moverte",

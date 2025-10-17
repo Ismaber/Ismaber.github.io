@@ -3,13 +3,17 @@ import {
   SiPython, SiJavascript, SiC, SiCplusplus, SiKotlin,
   SiLinux, SiGnubash, SiPostgresql, SiDocker,
   SiReact, SiNextdotjs, SiGit, SiGithubactions, SiTailwindcss,
-  SiOpenstack, SiQemu, SiRos, SiSqlite,
+  SiOpenstack, SiQemu, SiSqlite,
   SiAstro, SiHtml5, SiCss3, SiTypescript, SiMongodb, SiOracle,
   SiCentos,
   SiUbuntu,
   SiNodedotjs,
   SiExpress,
-  SiGo
+  SiGo,
+  SiSwagger,
+  SiMarkdown,
+  SiOverleaf,
+  SiLatex
 } from "react-icons/si";
 
 export type Tool = {
@@ -17,7 +21,13 @@ export type Tool = {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   ring: string;
-  category: "languages" | "backendDb" | "devops" | "web" | "systems" | "robotics";
+  category: 
+    "languages" |
+    "backendDb" |
+    "devops" |
+    "web" |
+    "systems" |
+    "docs";
 };
 
 export const TOOLS: Tool[] = [
@@ -57,10 +67,13 @@ export const TOOLS: Tool[] = [
   { id: "linux", label: "Linux", icon: SiLinux, ring: "ring-yellow-400/50", category: "systems" },
   { id: "ubuntu", label: "Ubuntu", icon: SiUbuntu, ring: "ring-orange-600/50", category: "systems" },
   { id: "centos", label: "Centos", icon: SiCentos, ring: "ring-purple-400/50", category: "systems" },
-  { id: "bash", label: "Bash", icon: SiGnubash, ring: "ring-green-600/50", category: "systems" },
+  { id: "bash", label: "Bash", icon: SiGnubash, ring: "ring-zinc-600/50", category: "systems" },
   { id: "openstack", label: "OpenStack", icon: SiOpenstack, ring: "ring-rose-600/50", category: "systems" },
   { id: "kvm", label: "KVM / QEMU", icon: SiQemu, ring: "ring-orange-500/50", category: "systems" },
 
-  // Robótica
-  { id: "ros2", label: "ROS 2", icon: SiRos, ring: "ring-slate-800/50", category: "robotics" },
+  // Documentación 
+  { id: "markdown", label: "Markdown", icon: SiMarkdown, ring: "ring-gray-500/50", category: "docs" },
+  { id: "overleaf", label: "Overleaf", icon: SiOverleaf, ring: "ring-green-600/50", category: "docs" },
+  { id: "latex", label: "LaTeX", icon: SiLatex, ring: "ring-emerald-500/50", category: "docs" },
+  { id: "swagger", label: "Swagger / OpenAPI", icon: SiSwagger, ring: "ring-lime-400/50", category: "docs" },
 ];

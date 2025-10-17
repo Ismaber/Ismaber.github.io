@@ -7,7 +7,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "pdf": "tsx src/scripts/generate-pdf.ts --preset=ebook"
+    "pdf": "tsx src/scripts/generatePdf.ts --preset=ebook"
   },
   "dependencies": {
     "@astrojs/react": "^4.4.0",

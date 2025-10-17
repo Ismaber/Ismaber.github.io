@@ -8,14 +8,14 @@ const locale = (Astro.currentLocale ?? 'es') as 'es' | 'en';
 
 <!-- Capa de snake (fondo + IA) -->
 <div
-  id="snake-layer"
+  id="game-layer"
   class="
     pointer-events-none fixed inset-0 z-[-5] opacity-40 dark:opacity-40
     [mask-image:radial-gradient(900px_700px_at_50%_35%,_#000_55%,_transparent_100%)]
   "
   aria-hidden="true"
 >
-  <canvas id="snake-bg" class="w-full h-full"></canvas>
+  <canvas id="game-bg" class="w-full h-full"></canvas>
 </div>
 
 <!-- Botón easter egg (control para abrir el overlay del juego) -->
@@ -23,18 +23,18 @@ const locale = (Astro.currentLocale ?? 'es') as 'es' | 'en';
 
 <!-- Overlay a pantalla completa (dialog accesible) -->
 <div
-  id="snake-overlay"
+  id="game-overlay"
   class="fixed inset-0 z-[1000] hidden opacity-0 transition-opacity duration-300"
   role="dialog"
   aria-modal="true"
   tabindex="-1"
 >
   <!-- Lienzo de juego en primer plano -->
-  <canvas id="snake-play" class="w-full h-full block"></canvas>
+  <canvas id="game-play" class="w-full h-full block"></canvas>
 
   <!-- Leyenda translúcida (se oculta en móviles) -->
   <div
-    id="snake-hint"
+    id="game-hint"
     class="
       pointer-events-none absolute left-1/2 -translate-x-1/2 top-4
       text-xs sm:text-sm px-3 py-1.5 rounded-full
@@ -49,11 +49,11 @@ const locale = (Astro.currentLocale ?? 'es') as 'es' | 'en';
 
 
   <!-- Controles del overlay -->
-  <GameExitFab game="snake" locale={locale}/>
-  <GameTakeoverFab game="snake" locale={locale}/>
+  <GameExitFab locale={locale}/>
+  <GameTakeoverFab locale={locale}/>
 
   <!-- Joystick móvil (sólo en punteros "coarse" y MODO JUGADOR) -->
-  <div id="snake-joy" class="fixed bottom-6 left-6 select-none" aria-hidden="true">
+  <div id="game-joy" class="fixed bottom-6 left-6 select-none" aria-hidden="true">
     <div
       id="joy-base"
       class="
@@ -76,52 +76,3 @@ const locale = (Astro.currentLocale ?? 'es') as 'es' | 'en';
 
   <SnakeBoot client:idle />
 </div>
-
-<style is:global>
-  /* Overlay abierto: oculta el botón flotante principal */
-  body.snake-open #snake-ctrl { display: none !important; }
-
-  /* Modo jugador: oculta el botón "Tomar el control" */
-  #snake-overlay.player-mode #snake-takeover { display: none !important; }
-
-  /* Joystick: SIEMPRE oculto por defecto (se muestra por media-query abajo) */
-  #snake-joy { display: none !important; }
-
-  /* Por defecto: muestra el texto de desktop */
-  #snake-hint .hint-mobile { display: none; }
-
-  /* Sólo en dispositivos táctiles (puntero "coarse") y en modo jugador */
-  @media (pointer: coarse) {
-    #snake-overlay.player-mode #snake-joy {
-      display: block !important;
-      pointer-events: auto !important;
-    }
-
-    #snake-hint .hint-desktop { display: none; }
-    #snake-hint .hint-mobile { display: inline; }
-  }
-
-  /* Sólo estilos del snake en modo play (quita máscaras globales) */
-  .snake-play {
-    -webkit-mask-image: none !important;
-    mask-image: none !important;
-    opacity: .9 !important;
-  }
-
-  /* Ocultar/inhabilitar resto de la página al abrir el overlay */
-  .page-hidden {
-    opacity: 0 !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-    user-select: none !important;
-    transition: opacity .25s ease;
-  }
-
-  /* Reduce motion: desactiva animaciones si el usuario lo pide */
-  @media (prefers-reduced-motion: reduce) {
-    #snake-layer,
-    #snake-overlay {
-      animation: none !important;
-    }
-  }
-</style>
