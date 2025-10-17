@@ -19,7 +19,7 @@ const locale = (Astro.currentLocale ?? 'es') as 'es' | 'en';
 </div>
 
 <!-- Botón easter egg (control para abrir el overlay del juego) -->
-<GameCtrlFab game="snake" locale={locale}/>
+<GameCtrlFab client:visible game="snake" locale={locale}/>
 
 <!-- Overlay a pantalla completa (dialog accesible) -->
 <div
@@ -49,8 +49,8 @@ const locale = (Astro.currentLocale ?? 'es') as 'es' | 'en';
 
 
   <!-- Controles del overlay -->
-  <GameExitFab locale={locale}/>
-  <GameTakeoverFab locale={locale}/>
+  <GameExitFab client:visible locale={locale}/>
+  <GameTakeoverFab client:visible locale={locale}/>
 
   <!-- Joystick móvil (sólo en punteros "coarse" y MODO JUGADOR) -->
   <div id="game-joy" class="fixed bottom-6 left-6 select-none" aria-hidden="true">

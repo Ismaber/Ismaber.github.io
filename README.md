@@ -4,14 +4,10 @@ Este repositorio contiene el código de mi portafolio personal publicado en **Gi
 Muestra información sobre mi trayectoria, formación, habilidades y las tecnologías que manejo.
 El proyecto está construido con **Astro**, **React**, **TypeScript** y **Tailwind CSS**, y es totalmente *responsive*, accesible y adaptado a varios idiomas.
 
----
-
 ## Demo en línea
 
 Puedes visitar la versión desplegada en GitHub Pages en:
 👉 [Ismaber.github.io](https://ismaber.github.io/)
-
----
 
 ## Contenidos del sitio
 
@@ -25,8 +21,6 @@ Puedes visitar la versión desplegada en GitHub Pages en:
 * **Temas y colores**: Permite cambiar entre modo claro y oscuro y escoger distintos colores de acento. La configuración se almacena en *localStorage* para mantener la preferencia.
 * **Juegos ocultos**: Como elemento lúdico, incluye una versión del *Snake*.
 
----
-
 ## Tecnologías utilizadas
 
 | Categoría                  | Tecnologías principales                        |
@@ -38,11 +32,9 @@ Puedes visitar la versión desplegada en GitHub Pages en:
 | **Iconos**                 | React Icons                                    |
 | **Otras herramientas**     | Playwright (generación de PDF), Vite (bundler) |
 
----
-
 ## Estructura del proyecto
 
-```
+```bash
 /public
  ├── curriculum_ismael_berdusan_es.pdf
  ├── curriculum_ismael_berdusan_en.pdf
@@ -60,8 +52,6 @@ Puedes visitar la versión desplegada en GitHub Pages en:
  ├── styles        - Estilos globales y utilidades de Tailwind
  └── templates     - Plantillas de secciones reutilizables (Home.astro)
 ```
-
----
 
 ## Instalación y uso
 
@@ -108,8 +98,6 @@ npm run pdf
 
 Este script utiliza **Playwright** para renderizar la plantilla PDF y **Ghostscript** para optimizarla.
 El PDF generado se guarda en la carpeta `public/` con el nombre correspondiente según el idioma.
-
----
 
 ## Contribuciones y licencia
 
