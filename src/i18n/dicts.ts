@@ -2,6 +2,8 @@
 export const DICTS = {
   en: {
     title: "Ismael Berdusán Muñoz",
+    sitename: "Ismael Berdusán Muñoz",
+    description: "Computer Science graduate",
     ui: {
       language: "Language",
       lang_es: "Spanish",
@@ -121,6 +123,8 @@ export const DICTS = {
 
   es: {
     title: "Ismael Berdusán Muñoz",
+    sitename: "Ismael Berdusán Muñoz",
+    description: "Ingeniero informático",
     ui: {
       language: "Idioma",
       lang_es: "Español",

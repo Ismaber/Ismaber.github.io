@@ -5,27 +5,26 @@ import Background from "../components/Background.astro";
 import { t } from '../i18n/store.ts';
 import Snake from '../components/Snake.astro';
 import { IDS } from '../constants/game';
+import avatar from "../assets/profile.png";
 
 type Props = {
   title?: string;
   description?: string;
-  image?: string;         // ruta absoluta o relativa a /public
-  noindex?: boolean;      // opcional para desindexar páginas concretas
+  image?: string;
+  noindex?: boolean;
 }
 
 const locale = (Astro.currentLocale ?? 'es') as 'es' | 'en';
-const pageTitleDefault = t(locale, 'title');
 
 const {
-  title = pageTitleDefault,
-  description = t(locale, 'meta.description') ?? '',
-  image = '/og-default.jpg',
+  title = t(locale, 'title'),
+  description = t(locale, 'description'),
+  image = avatar.src,
   noindex = false
 } = Astro.props as Props;
 
 const canonical = Astro.url;
 
-// Hreflang: ajusta tus rutas reales (ej. /en/... para inglés)
 const path = Astro.url.pathname;
 let altEs: string;
 let altEn: string;
