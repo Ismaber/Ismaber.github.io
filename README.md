@@ -9,18 +9,6 @@ El proyecto está construido con **Astro**, **React**, **TypeScript** y **Tailwi
 Puedes visitar la versión desplegada en GitHub Pages en:
 👉 [Ismaber.github.io](https://ismaber.github.io/)
 
-## Contenidos del sitio
-
-* **Página de inicio**: Introducción con selector de idioma (español/inglés) y acceso a las distintas secciones.
-* **Sobre mí**: Breve descripción profesional en la que explico mi interés por la administración de sistemas y mi capacidad de adaptación.
-* **Experiencia**: Resumen de la integración de servidores virtuales con la infraestructura del Departamento de Informática e Ingeniería de Sistemas, incluyendo instalación y configuración de *OpenStack con Kolla-Ansible*.
-* **Educación**: Información sobre mi Grado en Ingeniería Informática y las especializaciones en administración de sistemas, bases de datos y desarrollo web.
-* **Herramientas**: Catálogo de tecnologías organizadas por categorías (lenguajes, Backend/DB, DevOps, Web, sistemas/virtualización y documentación), cada una con su icono y esquema de colores.
-* **Contacto**: Sección lateral con correo, ubicación geográfica, enlaces a LinkedIn y GitHub, junto con habilidades y nivel de idiomas.
-* **Descarga de CV**: Botón para descargar un PDF con mi curriculum vitae en español o inglés, además de un visor para consultarlo sin salir del sitio.
-* **Temas y colores**: Permite cambiar entre modo claro y oscuro y escoger distintos colores de acento. La configuración se almacena en *localStorage* para mantener la preferencia.
-* **Juegos ocultos**: Como elemento lúdico, incluye una versión del *Snake*.
-
 ## Tecnologías utilizadas
 
 | Categoría                  | Tecnologías principales                        |
@@ -101,7 +89,7 @@ El PDF generado se guarda en la carpeta `public/` con el nombre correspondiente 
 
 ## Contribuciones y licencia
 
-Este proyecto es de carácter personal y está pensado como demostración de mis habilidades técnicas.
+Este proyecto es de carácter personal y está pensado como una pequeña demostración de mis habilidades técnicas.
 No se ha definido ninguna licencia de código abierto.
 
 Si deseas reutilizar parte del código o tienes alguna sugerencia, puedes:
@@ -109,5 +97,5 @@ Si deseas reutilizar parte del código o tienes alguna sugerencia, puedes:
 * Abrir un *issue* en GitHub.
 * Contactarme a través de **LinkedIn** o **GitHub**.
 
-🔗 [LinkedIn](https://www.linkedin.com/in/ismael-berdus%C3%A1n-mu%C3%B1oz-a72a41338/)
+🔗 [LinkedIn](https://www.linkedin.com/in/ismael-berdusán-muñoz-a72a41338/)
 🔗 [GitHub](https://github.com/Ismaber)

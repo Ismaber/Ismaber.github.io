@@ -1,4 +1,4 @@
-import { FaJava } from "react-icons/fa6";
+import { FaJava, FaWindows } from "react-icons/fa6";
 import {
   SiPython, SiJavascript, SiC, SiCplusplus, SiKotlin,
   SiLinux, SiGnubash, SiPostgresql, SiDocker,
@@ -13,7 +13,8 @@ import {
   SiSwagger,
   SiMarkdown,
   SiOverleaf,
-  SiLatex
+  SiLatex,
+  SiVirtualbox
 } from "react-icons/si";
 
 export type Tool = {
@@ -40,6 +41,7 @@ export const TOOLS: Tool[] = [
   { id: "java", label: "Java", icon: FaJava, ring: "ring-sky-700/50", category: "languages" },
   { id: "kotlin", label: "Kotlin", icon: SiKotlin, ring: "ring-violet-500/50", category: "languages" },
   { id: "go", label: "Go", icon: SiGo, ring: "ring-cyan-400/50", category: "languages" },
+  { id: "bash", label: "Bash", icon: SiGnubash, ring: "ring-zinc-600/50", category: "languages" },
 
   // Backend / DB
   { id: "sql", label: "SQL", icon: SiSqlite, ring: "ring-sky-900/50", category: "backendDb" },
@@ -58,18 +60,19 @@ export const TOOLS: Tool[] = [
   // Web
   { id: "html", label: "HTML5", icon: SiHtml5, ring: "ring-orange-500/50", category: "web" },
   { id: "css", label: "CSS3", icon: SiCss3, ring: "ring-blue-500/50", category: "web" },
+  { id: "tailwind", label: "Tailwind", icon: SiTailwindcss, ring: "ring-cyan-400/50", category: "web" },
   { id: "react", label: "React", icon: SiReact, ring: "ring-sky-400/50", category: "web" },
   { id: "next", label: "Next.js", icon: SiNextdotjs, ring: "ring-black/50", category: "web" },
-  { id: "tailwind", label: "Tailwind", icon: SiTailwindcss, ring: "ring-cyan-400/50", category: "web" },
   { id: "astro", label: "Astro", icon: SiAstro, ring: "ring-orange-400/50", category: "web" },
 
   // Sistemas / Virtualización
   { id: "linux", label: "Linux", icon: SiLinux, ring: "ring-yellow-400/50", category: "systems" },
   { id: "ubuntu", label: "Ubuntu", icon: SiUbuntu, ring: "ring-orange-600/50", category: "systems" },
   { id: "centos", label: "Centos", icon: SiCentos, ring: "ring-purple-400/50", category: "systems" },
-  { id: "bash", label: "Bash", icon: SiGnubash, ring: "ring-zinc-600/50", category: "systems" },
+  { id: "windows", label: "Windows", icon: FaWindows, ring: "ring-sky-700/50", category: "systems" },
   { id: "openstack", label: "OpenStack", icon: SiOpenstack, ring: "ring-rose-600/50", category: "systems" },
   { id: "kvm", label: "KVM / QEMU", icon: SiQemu, ring: "ring-orange-500/50", category: "systems" },
+  { id: "virtualbox", label: "VirtualBox", icon: SiVirtualbox, ring: "ring-blue-400/50", category: "systems" },
 
   // Documentación 
   { id: "markdown", label: "Markdown", icon: SiMarkdown, ring: "ring-gray-500/50", category: "docs" },
