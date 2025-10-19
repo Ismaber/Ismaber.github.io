@@ -23,9 +23,10 @@ interface PdfModalButtonProps {
     modal_unsupported: string;
     modal_open_new_tab: string;
   };
+  handleDownload: () => void;
 }
 
-export default function PdfModalButton({ pdfUrl, labels }: PdfModalButtonProps) {
+export default function PdfModalButton({ pdfUrl, labels, handleDownload }: PdfModalButtonProps) {
   const [pdfOpen, setPdfOpen] = useState(false);
 
   function browserSupportsPdfEmbedding() {
@@ -117,6 +118,7 @@ export default function PdfModalButton({ pdfUrl, labels }: PdfModalButtonProps) 
                   href={pdfUrl}
                   download
                   color="primary"
+                  onPress={handleDownload}
                 >
                   {labels.modal_download}
                 </Button>

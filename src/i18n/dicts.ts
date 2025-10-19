@@ -28,6 +28,8 @@ export const DICTS = {
       modal_close: "Close",
       modal_unsupported: "Your browser cannot display embedded PDFs.",
       modal_open_new_tab: "Open in a new tab",
+      toast_title: "Downloading CV…",
+      toast_description: "If your browser opens it in a tab, you can save it from there.",
     },
     profile: { alt: "Profile Picture" },
     headline: "Computer Science",
@@ -74,6 +76,7 @@ export const DICTS = {
         tfg: {
           title: "Final Degree Project",
           tfgTitle: "Performance analysis of a ground robot's teleoperation over a Wi-Fi Mesh network with Fast-Roaming",
+          code: "→ Source code",
           desc: "The project evaluated the feasibility of commercial networks alongside <b>Fast-Roaming</b> (<b>IEEE 802.11r/k/v</b>) as a communication layer for <b>ROS 2</b>, analyzing <b>latency</b>, <b>jitter</b>, <b>bandwidth</b>, and <b>packet loss</b> during teleoperation. It also involved the <b>development of a Python program</b> to monitor performance metrics in real time and experimental validation using a <b>Turtlebot</b> robot."
         },
         sys: {
@@ -149,6 +152,8 @@ export const DICTS = {
       modal_close: "Cerrar",
       modal_unsupported: "Tu navegador no puede mostrar PDFs incrustados.",
       modal_open_new_tab: "Abrir en una pestaña nueva",
+      toast_title: "Descargando CV…",
+      toast_description: "Si tu navegador lo abre en una pestaña, puedes guardarlo desde ahí.",
     },
     profile: { alt: "Foto de perfil" },
     headline: "Ingeniería Informática",
@@ -195,6 +200,7 @@ export const DICTS = {
         tfg: {
           title: "Trabajo Fin de Grado",
           tfgTitle: "Análisis del rendimiento de la teleoperación de un robot terrestre sobre una red Wi-Fi Mesh con Fast-Roaming",
+          code: "→ Código fuente",
           desc: "Se evaluó la viabilidad de estas redes comerciales junto con el <b>Fast-Roaming</b> (<b>IEEE 802.11r/k/v</b>) como soporte de comunicación para <b>ROS 2</b>, midiendo métricas como <b>latencia</b>, <b>jitter</b>, <b>ancho de banda</b> y <b>pérdida de paquetes</b> durante la teleoperación. El trabajo incluyó la <b>implementación de un programa en Python</b> para monitorizar el rendimiento en tiempo real y la validación experimental mediante un robot <b>Turtlebot</b>."
         },
         sys: {

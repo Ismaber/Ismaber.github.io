@@ -5,7 +5,8 @@ import {
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
-  DropdownItem
+  DropdownItem,
+  addToast
 } from "@heroui/react";
 import { FaGlobe, FaFileArrowDown } from "react-icons/fa6";
 import { ES, GB } from "country-flag-icons/react/3x2";
@@ -23,6 +24,8 @@ type Labels = {
   modal_close: string;
   modal_unsupported: string;
   modal_open_new_tab: string;
+  toast_title: string;
+  toast_description: string;
 };
 
 export default function HeaderButtons({
@@ -34,7 +37,6 @@ export default function HeaderButtons({
   toEN: string;
   labels: Labels;
 }) {
-  const [pdfOpen, setPdfOpen] = useState(false);
   const locale = labels.currentLang === "ES" ? "es" : "en";
   const base = import.meta.env.BASE_URL;
   const pdfFile = locale === "es" ? "curriculum_ismael_berdusan_es.pdf" : "curriculum_ismael_berdusan_en.pdf";
@@ -45,14 +47,17 @@ export default function HeaderButtons({
   const FlagES = <ES title="Español" className="h-4 w-6 rounded-sm ring-1 ring-black/5 shadow-sm" />;
   const FlagEN = <GB title="English" className="h-4 w-6 rounded-sm ring-1 ring-black/5 shadow-sm" />;
 
-  function browserSupportsPdfEmbedding() {
-    // una heurística: comprobamos si el navegador tiene el PDF plugin embebido
-    return typeof navigator !== "undefined" && 
-          navigator.userAgent.match(/(iPad|iPhone|Android)/) === null;
-  }
-
-  const isMobileOrNoSupport = !browserSupportsPdfEmbedding();
-
+  const handleDownload = () => {
+    addToast({
+      title: labels.toast_title,
+      description: labels.toast_description,
+      color: "primary",
+      variant: "solid",
+      radius: "lg",
+      icon: <FaFileArrowDown />,
+      timeout: 3000,
+    });
+  };
 
   return (
     <div className="flex items-center justify-center sm:justify-end gap-2 md:gap-3">
@@ -114,6 +119,7 @@ export default function HeaderButtons({
           modal_unsupported: labels.modal_unsupported,
           modal_open_new_tab: labels.modal_open_new_tab,
         }}
+        handleDownload={handleDownload}
       />
 
       {/* Descargar */}
@@ -126,6 +132,7 @@ export default function HeaderButtons({
         className="px-3 py-2 min-h-10 min-w-10"
         aria-label={labels.download}
         title={labels.download}
+        onPress={handleDownload}
       >
         <span className="hidden md:inline">{labels.download}</span>
       </Button>

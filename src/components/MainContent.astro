@@ -5,7 +5,6 @@ import { FaCircleUser, FaBriefcase, FaGraduationCap, FaWrench } from 'react-icon
 import { ResponsiveAside, type SocialLink } from './Aside';
 import ToolsByCategory from './ToolsByCategory';
 import { Image } from "astro:assets";
-import { Button, Link } from '@heroui/react';
 import avatar from "../assets/profile.png";
 
 const locale = (Astro.currentLocale ?? 'es') as 'es' | 'en';
@@ -88,9 +87,8 @@ const experiences: ExperienceItem[] =
     </ResponsiveAside>
 
 
-    <!-- Main content -->
     <div class="min-w-0 space-y-8">
-      <!-- About -->
+      <!-- Sobre mí -->
       <Section
         id="about"
         title={t(locale, 'sections.about')}
@@ -99,7 +97,7 @@ const experiences: ExperienceItem[] =
         <div class="rt leading-7 sm:leading-8" set:html={t(locale, 'about.text')}></div>
       </Section>
 
-      <!-- Experience -->
+      <!-- Experiencia -->
       <Section
         id="experience"
         title={t(locale, 'sections.experience')}
@@ -141,7 +139,7 @@ const experiences: ExperienceItem[] =
         </div>
       </Section>
 
-      <!-- Education -->
+      <!-- Educación -->
       <Section
         id="education"
         title={t(locale, 'sections.education')}
@@ -159,22 +157,21 @@ const experiences: ExperienceItem[] =
               </span>
             </div>
 
-            {/* Ramas / Itinerarios */}
             <div class="grid gap-2.5">
               <div class="pt-2.5 border-t border-dashed border-slate-300/60 first:pt-0 first:border-0 dark:border-slate-600/35">
-                <div class="font-bold mb-0.5">
+                <div class="font-semibold mb-0.5">
                   {t(locale, 'education.tracks.sys.title')}
                 </div>
                 <div class="rt leading-7 sm:leading-8" set:html={t(locale, 'education.tracks.sys.desc')}></div>
               </div>
               <div class="pt-2.5 border-t border-dashed border-slate-300/60 first:pt-0 first:border-0 dark:border-slate-600/35">
-                <div class="font-bold mb-0.5">
+                <div class="font-semibold mb-0.5">
                   {t(locale, 'education.tracks.db.title')}
                 </div>
                 <div class="rt leading-7 sm:leading-8" set:html={t(locale, 'education.tracks.db.desc')}></div>
               </div>
               <div class="pt-2.5 border-t border-dashed border-slate-300/60 first:pt-0 first:border-0 dark:border-slate-600/35">
-                <div class="font-bold mb-0.5">
+                <div class="font-semibold mb-0.5">
                   {t(locale, 'education.tracks.web.title')}
                 </div>
                 <div class="rt leading-7 sm:leading-8" set:html={t(locale, 'education.tracks.web.desc')}></div>
@@ -184,7 +181,7 @@ const experiences: ExperienceItem[] =
             {/* TFG */}
             <div class="rt mt-3 pt-3 border-t border-dashed border-slate-300/60 dark:border-slate-600/35">
               <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                <div class="font-bold mb-0.5">
+                <div class="font-semibold mb-0.5">
                   {t(locale, 'education.tracks.tfg.title')}
                 </div>
               </div>
@@ -195,13 +192,23 @@ const experiences: ExperienceItem[] =
               >
                 {t(locale, 'education.tracks.tfg.tfgTitle')}
               </a>
+              <div>
+                <a
+                  href="https://github.com/Ismael-28/ros_monitor"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-sm text-slate-500 dark:text-slate-400 mt-0.5"
+                >
+                  {t(locale, "education.tracks.tfg.code")}
+                </a>
+              </div>
               <div class="mt-1 leading-7 sm:leading-8" set:html={t(locale, 'education.tracks.tfg.desc')}></div>
             </div>
           </div>
         </div>
       </Section>
 
-      <!-- Tools -->
+      <!-- Herramientas -->
       <Section
         id="tools"
         title={t(locale, 'sections.tools')}
