@@ -1,10 +1,8 @@
 // src/hooks/useTheme.ts
-import { useState, useEffect } from "react";
+import { useState, useLayoutEffect } from "react";
 import { DICTS, type Locale } from "../i18n/dicts";
 
-export const BASE_THEMES = [
-  "indigo","emerald","amber","rose"
-] as const;
+export const BASE_THEMES = [ "indigo","emerald","amber","rose" ] as const;
 export type BaseTheme = typeof BASE_THEMES[number];
 
 const DARK_SUFFIX = "-dark";
@@ -48,31 +46,40 @@ export function useTheme() {
     window.dispatchEvent(new CustomEvent("theme-change", { detail: { base, dark } }));
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (typeof window === "undefined") return;
 
-    let initial = localStorage.getItem("theme");
-    if (initial === "light") initial = "indigo";
-    if (initial === "dark") initial = "indigo-dark";
-    if (!initial) {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      initial = prefersDark ? "indigo-dark" : "indigo";
+    // lee el valor una sola vez y resuelve en el orden más barato
+    let theme = localStorage.getItem("theme");
+    if (theme === "light") theme = "indigo";
+    else if (theme === "dark") theme = "indigo-dark";
+    if (!theme) {
+      theme = window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "indigo-dark"
+        : "indigo";
     }
 
-    const dark = initial.endsWith(DARK_SUFFIX);
-    const base = (dark ? initial.replace(DARK_SUFFIX, "") : initial) as BaseTheme;
+    const dark = theme.endsWith(DARK_SUFFIX);
+    const base = (dark ? theme.slice(0, -DARK_SUFFIX.length) : theme) as BaseTheme;
 
-    setBaseTheme(base);
-    setIsDark(dark);
+    // 1) aplica el tema ANTES de pintar para evitar FOUC
     applyTheme(base, dark);
 
+    // 2) luego sincroniza el estado (React batchea en layout)
+    setBaseTheme(base);
+    setIsDark(dark);
+
+    // listener ligero para cambios externos al hook
     const handleThemeChange = (e: Event) => {
       const { base: newBase, dark: newDark } =
         (e as CustomEvent<{ base: BaseTheme; dark: boolean }>).detail;
-      setBaseTheme(newBase);
-      setIsDark(newDark);
+
+      // evita sets redundantes
+      setBaseTheme(prev => (prev === newBase ? prev : newBase));
+      setIsDark(prev => (prev === newDark ? prev : newDark));
     };
-    window.addEventListener("theme-change", handleThemeChange);
+
+    window.addEventListener("theme-change", handleThemeChange, { passive: true });
     return () => window.removeEventListener("theme-change", handleThemeChange);
   }, []);
 

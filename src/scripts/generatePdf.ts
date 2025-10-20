@@ -372,7 +372,7 @@ async function make(lang: "es" | "en", outNiceName: string, preset: GSPreset) {
   let imgDataUrl: string;
   try {
     const sharp = await import("sharp");
-    const buf = await sharp.default(resolve("src/assets/profile.png"))
+    const buf = await sharp.default(resolve("src/assets/profile.webp"))
       .resize(IMG_TARGET_SIZE, IMG_TARGET_SIZE, { fit: "cover" })
       .flatten({ background: "#ffffff" })   // <- clave para evitar negro
       .jpeg({ quality: IMG_JPEG_QUALITY, mozjpeg: true })
