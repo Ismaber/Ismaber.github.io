@@ -14,6 +14,7 @@ import { ThemeModeButton } from "./ThemeSwitcher";
 import PdfModalButton from "./PdfModalButton";
 
 type Labels = {
+  change_language: string;
   currentLang: "ES" | "EN";
   download: string;
   view: string;
@@ -79,8 +80,8 @@ export default function HeaderButtons({
             startContent={<FaGlobe />}
             color="primary"
             className="px-3 py-2 min-h-10 min-w-10"
-            aria-label="Cambiar idioma"
-            title="Cambiar idioma"
+            aria-label={labels.change_language}
+            title={labels.change_language}
           >
             <span className="hidden md:inline">{labels.currentLang}</span>
           </Button>

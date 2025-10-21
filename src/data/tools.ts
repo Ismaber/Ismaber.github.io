@@ -34,13 +34,13 @@ export type Tool = {
 export const TOOLS: Tool[] = [
   // Lenguajes
   { id: "python", label: "Python", icon: SiPython, ring: "ring-blue-600/50", category: "languages" },
+  { id: "go", label: "Go", icon: SiGo, ring: "ring-cyan-400/50", category: "languages" },
+  { id: "cpp", label: "C++", icon: SiCplusplus, ring: "ring-blue-700/50", category: "languages" },
+  { id: "c", label: "C", icon: SiC, ring: "ring-slate-400/50", category: "languages" },
   { id: "js", label: "JavaScript", icon: SiJavascript, ring: "ring-yellow-400/50", category: "languages" },
   { id: "ts", label: "TypeScript", icon: SiTypescript, ring: "ring-blue-700/50", category: "languages" },
-  { id: "c", label: "C", icon: SiC, ring: "ring-slate-400/50", category: "languages" },
-  { id: "cpp", label: "C++", icon: SiCplusplus, ring: "ring-blue-700/50", category: "languages" },
   { id: "java", label: "Java", icon: FaJava, ring: "ring-sky-700/50", category: "languages" },
   { id: "kotlin", label: "Kotlin", icon: SiKotlin, ring: "ring-violet-500/50", category: "languages" },
-  { id: "go", label: "Go", icon: SiGo, ring: "ring-cyan-400/50", category: "languages" },
   { id: "bash", label: "Bash", icon: SiGnubash, ring: "ring-zinc-600/50", category: "languages" },
 
   // Backend / DB
@@ -76,7 +76,7 @@ export const TOOLS: Tool[] = [
 
   // Documentación 
   { id: "markdown", label: "Markdown", icon: SiMarkdown, ring: "ring-gray-500/50", category: "docs" },
+  { id: "swagger", label: "Swagger / OpenAPI", icon: SiSwagger, ring: "ring-lime-400/50", category: "docs" },
   { id: "overleaf", label: "Overleaf", icon: SiOverleaf, ring: "ring-green-600/50", category: "docs" },
   { id: "latex", label: "LaTeX", icon: SiLatex, ring: "ring-emerald-500/50", category: "docs" },
-  { id: "swagger", label: "Swagger / OpenAPI", icon: SiSwagger, ring: "ring-lime-400/50", category: "docs" },
 ];

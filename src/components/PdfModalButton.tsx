@@ -41,6 +41,7 @@ export default function PdfModalButton({ pdfUrl, labels, handleDownload }: PdfMo
         startContent={<FaFileLines />}
         color="primary"
         className="px-3 py-2 min-h-10 min-w-10"
+        aria-label={labels.view_portfolio}
         onPress={() => setPdfOpen(true)}
       >
         <span className="hidden md:inline">{labels.view_portfolio}</span>

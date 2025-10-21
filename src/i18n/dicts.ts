@@ -6,6 +6,7 @@ export const DICTS = {
     description: "Computer Science graduate",
     ui: {
       language: "Language",
+      change_language: "Change language",
       lang_es: "Spanish",
       lang_en: "English",
       download: "Download",
@@ -130,6 +131,7 @@ export const DICTS = {
     description: "Ingeniero informático",
     ui: {
       language: "Idioma",
+      change_language: "Cambiar idioma",
       lang_es: "Español",
       lang_en: "Inglés",
       download: "Descargar",
