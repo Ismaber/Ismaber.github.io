@@ -1,60 +1,123 @@
-import { chromium } from "playwright";
+import { chromium, type Page } from "playwright";
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { spawn } from "node:child_process";
+import QRCode from "qrcode";
+
 import { DICTS } from "../i18n/dicts";
 import { TOOLS } from "../data/tools";
 
-const OUT_DIR = resolve("public");
-const NAME = "curriculum_ismael_berdusan";
-const LANGS = ["es", "en"] as const;
+// ============================================================================
+// Configuración global
+// ============================================================================
 
-// Ajustes
-const DEFAULT_PRESET = "ebook";
-const USE_GOOGLE_FONTS = true;
-const IMG_JPEG_QUALITY = 78;
-const IMG_TARGET_SIZE = 256;
+const CONFIG = {
+  OUT_DIR: resolve("public"),
+  NAME: "curriculum_ismael_berdusan",
+  LANGS: ["es", "en"] as const,
+  DEFAULT_PRESET: "ebook",
+  USE_GOOGLE_FONTS: true,
+  IMG_JPEG_QUALITY: 78,
+  IMG_TARGET_SIZE: 256,
+  TEMPLATE_PATH: resolve("src/scripts/cv.html"),
+  SITE_URL: "https://Ismaber.github.io",
+  PHONE_NUMBER: "+34 617 27 07 25",
+  TEL_PHONE_NUMBER: "tel:+34617270725",
+};
 
-const tplPath = resolve("src/scripts/cv.html");
+// ============================================================================
+// Utilidades — Helpers
+// ============================================================================
 
-// ---------- HELPERS ----------
-
-const chip = (text: string) => `
-  <span class="chip">${text}</span>
-`;
-
-const chips = (arr: string[]) => arr.map(chip).join("");
-
-const contactItem = (icon: string, href: string, label: string) => `
-  <div class="contact-item">
-    <i class="${icon}"></i>
-    <a href="${href}" class="contact-link" target="_blank">${label}</a>
-  </div>
-`;
-
-function loadTemplate(path: string, vars: Record<string, string>) {
-  return readFile(path, "utf8").then(html =>
-    Object.entries(vars).reduce(
-      (acc, [k, v]) => acc.replaceAll(`{{${k}}}`, v),
-      html
-    )
+/**
+ * Carga y renderiza la plantilla HTML reemplazando {{vars}}
+ */
+async function renderTemplate(
+  path: string,
+  vars: Record<string, string>
+): Promise<string> {
+  const html = await readFile(path, "utf8");
+  return Object.entries(vars).reduce(
+    (acc, [k, v]) => acc.replaceAll(`{{${k}}}`, v),
+    html
   );
 }
 
-// ---------- Ghostscript ----------
+/** Devuelve HTML de un chip */
+const chip = (text: string) => `<span class="chip">${text}</span>`;
+const chips = (arr: string[]) => arr.map(chip).join("");
 
-function findGsExecutable() {
+/** Devuelve HTML de un item de contacto */
+const contactItem = (icon: string, href: string, label: string) => `
+  <div class="contact-item">
+    <i class="${icon}"></i>
+    <a class="contact-link" href="${href}" target="_blank">${label}</a>
+  </div>
+`;
+
+// ============================================================================
+// Generación de QR
+// ============================================================================
+
+async function generateQR(url: string, size = 256): Promise<string> {
+  const opts: QRCode.QRCodeToBufferOptions = {
+    errorCorrectionLevel: "H",
+    type: "png",
+    width: size,
+    margin: 1,
+    color: {
+      dark: "#000000",
+      light: "#FFFFFF",
+    },
+  };
+
+  const png = await QRCode.toBuffer(url, opts);
+  return `data:image/png;base64,${png.toString("base64")}`;
+}
+
+// ============================================================================
+// Procesado de imágenes
+// ============================================================================
+
+/**
+ * Devuelve la foto de perfil como dataURL optimizado
+ */
+async function getProfileImage(): Promise<string> {
+  try {
+    const sharp = (await import("sharp")).default;
+
+    const buffer = await sharp(resolve("src/assets/profile.webp"))
+      .resize(CONFIG.IMG_TARGET_SIZE, CONFIG.IMG_TARGET_SIZE, {
+        fit: "cover",
+      })
+      .flatten({ background: "#fff" })
+      .jpeg({ quality: CONFIG.IMG_JPEG_QUALITY, mozjpeg: true })
+      .toBuffer();
+
+    return `data:image/jpeg;base64,${buffer.toString("base64")}`;
+  } catch {
+    // fallback
+    const fallback = await readFile(resolve("public/foto.png"));
+    return `data:image/png;base64,${fallback.toString("base64")}`;
+  }
+}
+
+// ============================================================================
+// Ghostscript PDF optimization
+// ============================================================================
+
+function findGhostscript(): string | null {
   const candidates = process.platform === "win32"
     ? ["gswin64c.exe", "gswin32c.exe", "gs"]
     : ["gs"];
 
-  const { PATH = "" } = process.env;
   const sep = process.platform === "win32" ? ";" : ":";
+  const dirs = (process.env.PATH ?? "").split(sep);
 
-  for (const dir of PATH.split(sep)) {
-    for (const name of candidates) {
+  for (const dir of dirs) {
+    for (const bin of candidates) {
+      const full = resolve(dir || ".", bin);
       try {
-        const full = resolve(dir || ".", name);
         require("fs").accessSync(full);
         return full;
       } catch {}
@@ -63,8 +126,9 @@ function findGsExecutable() {
   return null;
 }
 
-async function optimizeWithGhostscript(src: string, dst: string, preset: string) {
-  const gs = findGsExecutable();
+async function optimizePDF(src: string, dst: string, preset: string) {
+  const gs = findGhostscript();
+
   if (!gs) {
     await writeFile(dst, await readFile(src));
     return;
@@ -78,169 +142,170 @@ async function optimizeWithGhostscript(src: string, dst: string, preset: string)
     "-dDownsampleColorImages=true",
     "-dColorImageDownsampleType=/Bicubic",
     "-dColorImageResolution=150",
-    "-dDownsampleMonoImages=true",
-    "-dMonoImageResolution=300",
     "-dEmbedAllFonts=true",
     "-dSubsetFonts=true",
     "-dNOPAUSE",
     "-dQUIET",
     "-dBATCH",
     `-sOutputFile=${dst}`,
-    src
+    src,
   ];
 
   await new Promise<void>((resolve, reject) => {
-    const child = spawn(gs, args, { stdio: "inherit" });
-    child.on("exit", code => (code === 0 ? resolve() : reject(new Error("Ghostscript error"))));
-    child.on("error", reject);
+    const proc = spawn(gs, args, { stdio: "inherit" });
+
+    proc.on("exit", code =>
+      code === 0 ? resolve() : reject(new Error("Ghostscript failed"))
+    );
+    proc.on("error", reject);
   });
 }
 
-// ---------- MAIN GENERATOR ----------
+// ============================================================================
+// Generación HTML y PDF
+// ============================================================================
 
-async function make(lang: "es" | "en", outFile: string, preset: string) {
-  const d = DICTS[lang];
-  await mkdir(OUT_DIR, { recursive: true });
+async function buildHTML(lang: "es" | "en"): Promise<string> {
+  const dict = DICTS[lang];
 
-  // Imagen
-  let imgDataUrl = "";
-  try {
-    const sharp = await import("sharp");
-    const buf = await sharp.default(resolve("src/assets/profile.webp"))
-      .resize(IMG_TARGET_SIZE, IMG_TARGET_SIZE, { fit: "cover" })
-      .flatten({ background: "#fff" })
-      .jpeg({ quality: IMG_JPEG_QUALITY, mozjpeg: true })
-      .toBuffer();
-    imgDataUrl = `data:image/jpeg;base64,${buf.toString("base64")}`;
-  } catch {
-    const pngBuf = await readFile(resolve("public/foto.png"));
-    imgDataUrl = `data:image/png;base64,${pngBuf.toString("base64")}`;
-  }
+  const profileImage = await getProfileImage();
+  const qr = await generateQR(CONFIG.TEL_PHONE_NUMBER, 240);
 
-  // Bloques dinámicos
   const contactHTML = [
-    contactItem("fas fa-code text-indigo-500", "https://Ismaber.github.io", "Ismaber.github.io"),
     contactItem("fas fa-envelope text-indigo-500", "mailto:ismael2822001@gmail.com", "ismael2822001@gmail.com"),
-    contactItem("fas fa-map-marker-alt text-indigo-500", "https://www.google.com/maps/place/Zaragoza/", d.location.city),
+    contactItem("fas fa-map-marker-alt text-indigo-500", "https://www.google.com/maps/place/Zaragoza/", dict.location.city),
+    contactItem("fas fa-code text-indigo-500", CONFIG.SITE_URL, "Ismaber.github.io"),
     contactItem("fa-brands fa-linkedin text-indigo-500", "https://www.linkedin.com/in/ismael-berdusán-muñoz-a72a41338/", "Ismael Berdusán Muñoz"),
-    contactItem("fa-brands fa-github text-indigo-500", "https://github.com/Ismaber", "Ismaber")
+    contactItem("fa-brands fa-github text-indigo-500", "https://github.com/Ismaber", "Ismaber"),
   ].join("");
 
-  const skillsHTML = chips([
-    d.skills.teamwork,
-    d.skills.troubleshooting,
-    d.skills.detail,
-    d.skills.self,
-    d.skills.learning,
-    d.skills.initiative
-  ]);
-
-  // 👇 importante: se llama igual que en la plantilla: {{languagesHTML}}
-  const languagesHTML = chips([d.languages.es, d.languages.en]);
+  const skillsHTML = chips(Object.values(dict.skills));
+  const languagesHTML = chips([dict.languages.es, dict.languages.en]);
+  const toolsHTML = chips(TOOLS.map(t => t.label));
 
   const experienceHTML = `
     <ul class="text-gray-700">
-      ${d.experience.items.map(it => `
+      ${dict.experience.items
+        .map(
+          it => `
         <li class="text-lg font-semibold">${it.role}</li>
         <li class="italic mb-2"><span class="font-semibold">${it.place}</span>, ${it.date}</li>
-        <div class="exp-block">
-          <p>${it.desc}</p>
-        </div>
-      `).join("")}
+        <div class="exp-block"><p>${it.desc}</p></div>
+      `
+        )
+        .join("")}
     </ul>
   `;
 
   const educationHTML = `
     <ul class="text-gray-700">
-      <li class="text-lg font-semibold">${d.education.degree}</li>
-      <li class="italic mb-2"><span class="font-semibold">${d.education.place}</span>, ${d.education.date}</li>
+      <li class="text-lg font-semibold">${dict.education.degree}</li>
+      <li class="italic mb-2"><span class="font-semibold">${dict.education.place}</span>, ${dict.education.date}</li>
       <div class="exp-block">
-        ${(["sys", "db", "web"] as const).map(key => `
+        ${(["sys", "db", "web"] as const)
+          .map(
+            t => `
           <li>
-            <div class="text-lg font-semibold">${d.education.tracks[key].title}</div>
-            <p>${d.education.tracks[key].desc}</p>
+            <div class="text-lg font-semibold">${dict.education.tracks[t].title}</div>
+            <p>${dict.education.tracks[t].desc}</p>
           </li>
-        `).join("")}
+        `
+          )
+          .join("")}
       </div>
     </ul>
   `;
 
-  const toolsHTML = chips(TOOLS.map(t => t.label));
-
-  const fontFamily = USE_GOOGLE_FONTS
-    ? `'Lato', sans-serif`
-    : `system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif`;
-
-  const googleFonts = USE_GOOGLE_FONTS
+  const googleFonts = CONFIG.USE_GOOGLE_FONTS
     ? `
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
-  `
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    `
     : "";
 
-  const html = await loadTemplate(tplPath, {
+  return renderTemplate(CONFIG.TEMPLATE_PATH, {
     lang,
-    title: d.title,
-
+    title: dict.title,
     googleFonts,
-    fontFamily,
-
-    imgSrc: imgDataUrl,
-    profileAlt: d.profile.alt,
+    fontFamily: CONFIG.USE_GOOGLE_FONTS ? `'Lato', sans-serif` : "system-ui",
+    imgSrc: profileImage,
+    qrSrc: qr,
+    phoneNumber: CONFIG.PHONE_NUMBER,
+    profileAlt: dict.profile.alt,
     name: "Ismael Berdusán Muñoz",
-    headline: d.headline,
-
-    // títulos de secciones (que te faltaban)
-    aboutTitle: d.sections.about,
-    experienceTitle: d.sections.experience,
-    educationTitle: d.sections.education,
-    skillsTitle: d.sections.skills,
-    toolsTitle: d.sections.tools,
-
-    aboutText: d.about.text,
-
+    headline: dict.headline,
+    aboutTitle: dict.sections.about,
+    aboutText: dict.about.text,
+    experienceTitle: dict.sections.experience,
+    educationTitle: dict.sections.education,
+    skillsTitle: dict.sections.skills,
+    toolsTitle: dict.sections.tools,
     contactHTML,
-    languagesHTML,
     skillsHTML,
+    languagesHTML,
+    toolsHTML,
     experienceHTML,
     educationHTML,
-    toolsHTML,
   });
+}
 
-  const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage();
-  await page.setViewportSize({ width: 900, height: 1300 });
-  await page.emulateMedia({ media: "print" });
+/**
+ * Genera un PDF para un idioma
+ */
+async function generatePDF(page: Page, lang: "es" | "en", file: string, preset: string) {
+  const html = await buildHTML(lang);
+
   await page.setContent(html, { waitUntil: "load" });
   await page.waitForTimeout(150);
 
-  const raw = join(OUT_DIR, `__raw_${lang}.pdf`);
+  const tmp = join(CONFIG.OUT_DIR, `__raw_${lang}.pdf`);
+  const output = join(CONFIG.OUT_DIR, file);
+
   await page.pdf({
-    path: raw,
+    path: tmp,
     printBackground: true,
     preferCSSPageSize: true,
     margin: { top: "2mm", bottom: "0", left: "0", right: "2mm" },
     width: "210mm",
-    height: "297mm"
+    height: "297mm",
   });
 
-  await browser.close();
+  await optimizePDF(tmp, output, preset);
 
-  await optimizeWithGhostscript(raw, join(OUT_DIR, outFile), preset);
-  await unlink(raw);
+  await unlink(tmp);
 }
 
+// ============================================================================
 // MAIN
+// ============================================================================
+
 (async () => {
-  const preset = process.argv.find(a => a.startsWith("--preset="))?.split("=")[1] || DEFAULT_PRESET;
-  for (const lang of LANGS) {
-    const out = `${NAME}_${lang}.pdf`;
-    const fullPath = join(OUT_DIR, out);
+  const preset =
+    process.argv.find(a => a.startsWith("--preset="))?.split("=")[1] ||
+    CONFIG.DEFAULT_PRESET;
 
-    console.log(`Generando PDF para ${lang.toUpperCase()}...`);
-    await make(lang, out, preset);
+  console.log("Generando PDFs...\n");
 
-    console.log(`${lang.toUpperCase()} -> ${fullPath}`);
-  }
+  await mkdir(CONFIG.OUT_DIR, { recursive: true });
+  const browser = await chromium.launch({ headless: true });
+
+  const pages = await Promise.all(CONFIG.LANGS.map(() => browser.newPage()));
+
+  await Promise.all(
+    CONFIG.LANGS.map(async (lang, i) => {
+      const page = pages[i];
+      const fileName = `${CONFIG.NAME}_${lang}.pdf`;
+      const fullPath = join(CONFIG.OUT_DIR, fileName);
+
+      console.log(`Iniciando ${lang.toUpperCase()}`);
+
+      await generatePDF(page, lang, fileName, preset);
+
+      console.log(`${lang.toUpperCase()} -> ${fullPath}`);
+    })
+  );
+
+  await browser.close();
+  console.log("\nPDFs generados correctamente.");
 })();

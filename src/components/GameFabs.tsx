@@ -27,20 +27,30 @@ const baseBox =
   "shadow-xl hover:shadow-2xl hover:border-primary-800/50 dark:hover:border-primary-200/50 " +
   "transition z-40";
 
-const posCtrl     = "fixed bottom-20 md:bottom-4 left-4 size-14";
-const posExit     = "fixed top-4 right-4 size-14";
+const posCtrl = "fixed bottom-20 md:bottom-4 left-4 size-14";
+const posExit = "fixed top-4 right-4 size-14";
 const posTakeover = "fixed bottom-4 left-1/2 -translate-x-1/2 h-14 px-2";
 
 // --- iconos por juego para ctrl
 const ctrlIcon: Record<Game, ReactNode> = {
-  snake:  <GiSnake />,
-  msweep: <FaBomb  />,
+  snake: <GiSnake />,
+  msweep: <FaBomb />,
 };
 
 // --- núcleo privado para no repetir
 function Box({
-  id, title, className = "", onClick, children,
-}: { id: string; title: string; className?: string; onClick?: () => void; children: ReactNode; }) {
+  id,
+  title,
+  className = "",
+  onClick,
+  children,
+}: {
+  id: string;
+  title: string;
+  className?: string;
+  onClick?: () => void;
+  children: ReactNode;
+}) {
   return (
     <div id={id} className={[baseBox, className].join(" ")} onClick={onClick}>
       <Button
@@ -101,7 +111,11 @@ export function GameTakeoverFab({ className, onClick, locale }: BaseProps) {
   const label = t(loc, "games.takeover") as string;
 
   return (
-    <div id={id} className={[baseBox, posTakeover, className ?? ""].join(" ")} onClick={onClick}>
+    <div
+      id={id}
+      className={[baseBox, posTakeover, className ?? ""].join(" ")}
+      onClick={onClick}
+    >
       <Button
         type="button"
         aria-pressed="false"

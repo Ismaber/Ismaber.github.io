@@ -1,18 +1,39 @@
 // src/components/Aside.tsx
 import React from "react";
-import { Button, Drawer, DrawerBody, DrawerContent, Avatar, Chip, DrawerHeader } from "@heroui/react";
+import {
+  Button,
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  Avatar,
+  Chip,
+  DrawerHeader,
+} from "@heroui/react";
 import { useDisclosure } from "@heroui/react";
 import {
-  FaEnvelope, FaLocationDot, FaLinkedin, FaGithub,
-  FaLanguage, FaToolbox, FaGlobe, FaLink,
+  FaEnvelope,
+  FaLocationDot,
+  FaLinkedin,
+  FaGithub,
+  FaLanguage,
+  FaToolbox,
+  FaGlobe,
+  FaLink,
   FaXmark,
   FaIdCard,
 } from "react-icons/fa6";
 
 /* --------- Tipos --------- */
 type SocialKind = "linkedin" | "github" | "web" | "link";
-export interface SocialLink { kind: SocialKind; href: string; label: string; }
-export interface Language { code: string; label: string; }
+export interface SocialLink {
+  kind: SocialKind;
+  href: string;
+  label: string;
+}
+export interface Language {
+  code: string;
+  label: string;
+}
 
 export interface AsideProps {
   imgSrc: string;
@@ -57,7 +78,9 @@ export function AsideContent({
 }: AsideProps) {
   return (
     <div className="rt">
-      <h2 id="profile-title" className="sr-only">Perfil</h2>
+      <h2 id="profile-title" className="sr-only">
+        Perfil
+      </h2>
 
       <div
         className="w-40 h-40 mx-auto mb-4
@@ -92,21 +115,21 @@ export function AsideContent({
           </span>
           <div>
             {cityHref ? (
-              <a
-                href={cityHref}
-                target="_blank"
-                rel="noreferrer"
-                title={city}
-              >
+              <a href={cityHref} target="_blank" rel="noreferrer" title={city}>
                 {city}
               </a>
-            ) : city}
+            ) : (
+              city
+            )}
           </div>
         </div>
 
         {socialLinks.map((s) => (
           <div key={s.href} className="flex items-center gap-3">
-            <span className="size-9 rounded-lg bg-primary-300/40 text-primary-600 flex items-center justify-center dark:bg-primary-900/40 dark:text-primary-300" aria-hidden="true">
+            <span
+              className="size-9 rounded-lg bg-primary-300/40 text-primary-600 flex items-center justify-center dark:bg-primary-900/40 dark:text-primary-300"
+              aria-hidden="true"
+            >
               {socialIcon[s.kind] ?? <FaLink />}
             </span>
             <a href={s.href} target="_blank" rel="noopener noreferrer">
@@ -123,19 +146,23 @@ export function AsideContent({
         </h2>
         <ul className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-200/90">
           {languages.map((lang) => (
-            <li key={lang.code}><span className="text-lg font-semibold">{lang.label}</span></li>
+            <li key={lang.code}>
+              <span className="text-lg font-semibold">{lang.label}</span>
+            </li>
           ))}
         </ul>
       </div>
 
       <div className="mt-8">
         <h2 className="section-title text-xl font-bold text-primary-900 dark:text-primary-300 flex items-center gap-2">
-          <FaToolbox  />
+          <FaToolbox />
           <span>{skillsTitle}</span>
         </h2>
         <div className="mt-3 flex flex-wrap gap-2">
           {skills.map((sk) => (
-            <Chip key={sk} radius="sm" color="primary">{sk}</Chip>
+            <Chip key={sk} radius="sm" color="primary">
+              {sk}
+            </Chip>
           ))}
         </div>
       </div>
@@ -233,7 +260,7 @@ export function ResponsiveAside({ children, ...props }: AsideProps) {
                     variant="light"
                     onPress={onClose}
                   >
-                    <FaXmark/>
+                    <FaXmark />
                   </Button>
                 </DrawerHeader>
                 <DrawerBody className="pb-8">

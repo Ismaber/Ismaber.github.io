@@ -159,10 +159,8 @@ function PdfViewerClient({ url, className }: Props) {
         const container = containerRef.current;
         if (!container) return;
 
-        // Ancho visible del contenedor (CSS)
         const containerWidth = container.clientWidth;
 
-        // Viewport base y escala para encajar al ancho
         const viewport1 = page.getViewport({ scale: 1 });
         const scale = containerWidth / viewport1.width;
         const viewport = page.getViewport({ scale });
@@ -170,23 +168,19 @@ function PdfViewerClient({ url, className }: Props) {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        // HiDPI
         const ratio = window.devicePixelRatio || 1;
 
-        // Tamaño del canvas (backing store) y tamaño mostrado por CSS
         canvas.width = Math.floor(viewport.width * ratio);
         canvas.height = Math.floor(viewport.height * ratio);
         canvas.style.width = `${viewport.width}px`;
         canvas.style.height = `${viewport.height}px`;
 
-        // Transform para que PDF.js renderice nítido en pantallas HiDPI
         const transform : number[] | undefined = ratio !== 1 ? [ratio, 0, 0, ratio, 0, 0] : undefined;
 
         const task = page.render({
-          canvas,     // <-- requerido en v4
+          canvas,
           viewport,
-          transform,  // <-- opcional (HiDPI)
-          // background: "rgba(0,0,0,0)", // si quieres fondo transparente
+          transform,
         });
 
         await task.promise;

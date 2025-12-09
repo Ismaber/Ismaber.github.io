@@ -22,7 +22,7 @@
       line-height: 1.45;
     }
 
-    @page { size: A4; margin: 10mm; }
+    @page { size: A4; margin: 10mm 10mm 8mm 10mm; }
 
     h2.section-title {
       margin-top: 0.8rem;
@@ -74,26 +74,39 @@
 
 <body class="text-gray-800 p-[1mm]">
 
-  <!-- HEADER -->
+  <!-- ENCABEZADO -->
   <header class="flex items-center justify-between w-full">
 
-    <!-- Foto + nombre -->
+    <!-- FOTO + NOMBRE -->
     <div class="flex items-center gap-4">
-      <!-- Foto -->
       <img src="{{imgSrc}}"
           alt="{{profileAlt}}"
           class="w-20 h-20 rounded-full object-cover
                 border-2 border-indigo-600 ring-2 ring-indigo-300" />
 
-      <!-- Nombre + headline -->
       <div class="flex flex-col min-w-0">
         <h1 class="text-3xl font-bold leading-tight truncate">
           {{name}}
         </h1>
-        <!-- Idiomas (chips) -->
+
+        <!-- IDIOMAS -->
         <div class="flex flex-wrap gap-1 text-xs">
           {{languagesHTML}}
         </div>
+      </div>
+    </div>
+
+    <!-- QR -->
+    <div class="flex-shrink-0 flex flex-col items-center text-center">
+
+      <div class="text-sm font-semibold text-indigo-800 mb-1">
+        <i class="fas fa-phone mr-1 text-indigo-500"></i>{{phoneNumber}}
+      </div>
+
+      <div class="p-1 rounded-md border border-indigo-200 shadow-sm">
+        <img src="{{qrSrc}}" 
+            class="w-16 h-16 object-contain"
+            alt="QR Phone" />
       </div>
     </div>
 
