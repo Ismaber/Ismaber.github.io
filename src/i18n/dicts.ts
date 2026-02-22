@@ -33,7 +33,7 @@ export const DICTS = {
       toast_description: "If your browser opens it in a tab, you can save it from there.",
     },
     profile: { alt: "Profile Picture" },
-    headline: "Computer Science",
+    headline: "Junior Enterprise Solutions Engineer at NTT Data",
     sections: {
       contact: "CONTACT",
       languages: "LANGUAGES",
@@ -61,6 +61,12 @@ export const DICTS = {
     },
     experience: {
       items: [
+        {
+          role: "Junior Enterprise Solutions Engineer",
+          place: "NTT Data",
+          date: "January 2026 - Present",
+          desc: "Develops, tests, and maintains enterprise solutions, collaborating with cross-functional teams to ensure seamless integration and optimal performance. Provides technical support and troubleshooting for deployed solutions, while continuously learning and adapting to new technologies in the field."
+        },
         {
           role: "Virtualization and Network Integration",
           place: "University of Zaragoza",
@@ -158,7 +164,7 @@ export const DICTS = {
       toast_description: "Si tu navegador lo abre en una pestaña, puedes guardarlo desde ahí.",
     },
     profile: { alt: "Foto de perfil" },
-    headline: "Ingeniería Informática",
+    headline: "Junior Enterprise Solutions Engineer en NTT Data",
     sections: {
       contact: "CONTACTO",
       languages: "IDIOMAS",
@@ -186,6 +192,12 @@ export const DICTS = {
     },
     experience: {
       items: [
+        {
+          role: "Junior Enterprise Solutions Engineer",
+          place: "NTT Data",
+          date: "Enero 2026 - Presente",
+          desc: "Desarrollo, prueba y mantenimiento de soluciones empresariales, colaborando con equipos multifuncionales para garantizar una integración fluida y un rendimiento óptimo. Proporciona soporte técnico y resolución de problemas para las soluciones implementadas, mientras aprende y se adapta continuamente a nuevas tecnologías en el campo."
+        },
         {
           role: "Virtualización e Integración de Redes",
           place: "Universidad de Zaragoza",
