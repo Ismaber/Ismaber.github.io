@@ -41,52 +41,6 @@ Puedes visitar la versión desplegada en GitHub Pages en:
  └── templates     - Plantillas de secciones reutilizables (Home.astro)
 ```
 
-## Instalación y uso
-
-Clona este repositorio:
-
-```bash
-git clone https://github.com/Ismaber/Ismaber.github.io.git
-cd Ismaber.github.io
-```
-
-Instala las dependencias:
-
-```bash
-npm install
-```
-
-Inicia un servidor de desarrollo:
-
-```bash
-npm run dev
-```
-
-El sitio estará disponible en [http://localhost:4321](http://localhost:4321).
-
-Construye para producción:
-
-```bash
-npm run build
-```
-
-Los archivos estáticos resultantes se generan en la carpeta `dist/`.
-
-Vista previa de la build:
-
-```bash
-npm run preview
-```
-
-Generar el PDF del CV (opcional):
-
-```bash
-npm run pdf
-```
-
-Este script utiliza **Playwright** para renderizar la plantilla PDF y **Ghostscript** para optimizarla.
-El PDF generado se guarda en la carpeta `public/` con el nombre correspondiente según el idioma.
-
 ## Contribuciones y licencia
 
 Este proyecto es de carácter personal y está pensado como una pequeña demostración de mis habilidades técnicas.
